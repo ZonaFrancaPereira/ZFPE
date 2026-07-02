@@ -10,6 +10,17 @@
   --zf-navy: #22404b;
   --zf-teal: #1993b8;
 }
+.text-zf-navy { color: var(--zf-navy) !important; }
+.text-zf-teal { color: var(--zf-teal) !important; }
+
+/* --- Tarjeta con acento superior en el color corporativo teal. --- */
+.card-acento-teal {
+  border-top: 3px solid var(--zf-teal, #1993b8);
+  transition: box-shadow .15s;
+}
+.card-acento-teal:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .1) !important;
+}
 
 /* --- Encabezado de página (título + breadcrumb) con identidad de marca.
    Uso: <div class="app-content-header encabezado-zf"> ... <h3 class="titulo-zf">
