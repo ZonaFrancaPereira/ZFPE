@@ -1,6 +1,6 @@
 <?php
 /** @var array $indicador */
-$pageTitle  = 'Editar indicador — ZFIP-E';
+$pageTitle  = 'Editar indicador — ZFPE';
 $activePage = 'configuracion';
 $pageStyles = ['vista/assets/css/componentes.css'];
 $v = fn(string $k) => htmlspecialchars($_POST[$k] ?? $indicador[$k] ?? '');

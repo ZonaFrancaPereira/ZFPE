@@ -136,26 +136,11 @@ body.login-page {
   gap: .4rem;
   margin-bottom: 1.25rem;
 }
-.login-logo-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, .12);
-  border: 2px solid rgba(255, 255, 255, .45);
-  color: #ffffff;
-  font-size: 1.5rem;
-  backdrop-filter: blur(6px);
+.login-logo-img {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
 }
-.login-logo-texto {
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 1.5rem;
-  letter-spacing: .04em;
-}
-.login-logo-texto span { font-weight: 400; opacity: .8; }
 .login-logo-subtitulo {
   color: rgba(255, 255, 255, .7);
   font-size: .75rem;

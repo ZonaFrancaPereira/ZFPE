@@ -4,7 +4,7 @@
 /** @var float      $avance */
 /** @var array      $todasEmpresas */
 /** @var array      $documentosPorRequisito */
-$pageTitle     = 'Cronograma — ZFIP-E';
+$pageTitle     = 'Cronograma — ZFPE';
 $activePage    = 'cronograma';
 // componentes.css trae las clases compartidas (meta-pill, file-chip);
 // cronograma.css trae los estilos propios de esta vista (timeline, acentos por estado).

@@ -3,7 +3,7 @@
     <b>Versión</b> 1.0.0
   </div>
   <strong>
-    &copy; <?= date('Y') ?> <a href="#" class="text-decoration-none">ZFIP-E</a>.
+    &copy; <?= date('Y') ?> <a href="#" class="text-decoration-none">ZFPE</a>.
   </strong>
   Todos los derechos reservados.
 </footer>

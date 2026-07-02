@@ -7,7 +7,7 @@ $cssLogin       = __DIR__ . '/assets/css/login.css';
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Iniciar sesión — ZFIP-E</title>
+  <title>Iniciar sesión — ZFPE</title>
   <link rel="stylesheet" href="vista/assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="vista/assets/vendor/adminlte/css/adminlte.min.css">
   <link rel="stylesheet" href="vista/assets/css/componentes.css?v=<?= file_exists($cssComponentes) ? filemtime($cssComponentes) : '1' ?>">
@@ -36,15 +36,14 @@ $cssLogin       = __DIR__ . '/assets/css/login.css';
       <div class="login-text-divider"></div>
       <p class="login-text-tagline">Seguimiento y control empresarial integrado</p>
     </div>
-    <p class="login-footer-left">&copy; <?= date('Y') ?> ZFIP-E · Todos los derechos reservados</p>
+    <p class="login-footer-left">&copy; <?= date('Y') ?> ZFPE · Todos los derechos reservados</p>
   </div>
 
   <!-- Panel derecho: formulario -->
   <div class="login-form-panel">
     <div class="login-box">
       <div class="login-logo mb-4">
-        <span class="login-logo-badge"><i class="bi bi-shield-check"></i></span>
-        <span class="login-logo-texto">ZFIP<span>-E</span></span>
+        <img src="vista/img/logo2-recortado.png" alt="Zona Franca Internacional de Pereira" class="login-logo-img">
         <span class="login-logo-subtitulo">Acceso al sistema</span>
       </div>
 

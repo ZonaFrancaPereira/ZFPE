@@ -2,7 +2,7 @@
 /** @var array       $usuario */
 /** @var array|null  $empresa */
 /** @var array       $empresas */
-$pageTitle   = 'Editar usuario — ZFIP-E';
+$pageTitle   = 'Editar usuario — ZFPE';
 $activePage  = 'empresas';
 $pageStyles  = ['vista/assets/css/componentes.css'];
 $pageScripts = ['vista/assets/js/editar-usuario-empresa.js'];

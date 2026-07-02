@@ -1,6 +1,6 @@
 <?php
 /** @var array $todasEmpresas */
-$pageTitle  = 'Indicadores — ZFIP-E';
+$pageTitle  = 'Indicadores — ZFPE';
 $activePage = 'indicadores';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

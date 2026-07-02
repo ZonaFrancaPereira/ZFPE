@@ -1,7 +1,7 @@
 <?php
 /** @var array $compromisos */
 /** @var array $historialPorCompromiso */
-$pageTitle  = 'Mis compromisos — ZFIP-E';
+$pageTitle  = 'Mis compromisos — ZFPE';
 $activePage = 'mis-compromisos';
 // componentes.css trae las clases compartidas (meta-pill, file-chip, ch-timeline);
 // mis-compromisos.css trae los estilos propios de esta vista.

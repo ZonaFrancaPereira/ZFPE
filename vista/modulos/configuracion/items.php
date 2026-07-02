@@ -2,7 +2,7 @@
 /** @var array $etapas */
 /** @var array $requisitosPorEtapa */
 /** @var array $itemsPorRequisito */
-$pageTitle  = 'Ítems — ZFIP-E';
+$pageTitle  = 'Ítems — ZFPE';
 $activePage = 'configuracion';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

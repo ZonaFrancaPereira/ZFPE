@@ -3,7 +3,7 @@
 /** @var array $compromisos */
 /** @var array $responsables */
 /** @var array $historialPorCompromiso */
-$pageTitle  = 'Detalle del comité — ZFIP-E';
+$pageTitle  = 'Detalle del comité — ZFPE';
 $activePage = 'comites';
 $pageStyles = ['vista/assets/css/componentes.css'];
 $esOp       = in_array($_SESSION['usuario_rol'] ?? '', ['operaciones', 'admin'], true);

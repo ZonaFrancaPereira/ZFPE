@@ -1,6 +1,6 @@
 <?php
 /** @var array $usuarios */
-$pageTitle  = 'Usuarios de empresa — ZFIP-E';
+$pageTitle  = 'Usuarios de empresa — ZFPE';
 $activePage = 'usuarios-empresa';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

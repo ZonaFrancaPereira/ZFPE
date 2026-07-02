@@ -5,7 +5,7 @@
 /** @var array $itemsPorRequisito */
 /** @var array $documentosPorRequisito */
 /** @var array $historialPorRequisito */
-$pageTitle   = 'Seguimiento — ' . htmlspecialchars($empresa['razon_social']) . ' — ZFIP-E';
+$pageTitle   = 'Seguimiento — ' . htmlspecialchars($empresa['razon_social']) . ' — ZFPE';
 $activePage  = 'empresas';
 $pageStyles  = ['vista/assets/css/componentes.css', 'vista/assets/css/seguimiento.css'];
 $pageScripts = ['vista/assets/js/seguimiento.js'];
