@@ -1,19 +1,11 @@
 <?php
 
-class CronogramaControlador {
+require_once __DIR__ . '/ControladorBase.php';
 
-    private PDO $db;
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
+class CronogramaControlador extends ControladorBase {
 
     public function index(?int $id = null): void {
         require_once __DIR__ . '/../modelo/EmpresasModelo.php';
-
-        $rol           = $_SESSION['usuario_rol'] ?? '';
-        $esOperaciones = $rol === 'operaciones';
-        $esAdmin       = $rol === 'admin';
 
         $empresa    = null;
         $etapas     = [];
@@ -21,7 +13,7 @@ class CronogramaControlador {
         $documentosPorRequisito = [];
         $modelo     = new EmpresasModelo($this->db);
 
-        if ($esOperaciones || $esAdmin) {
+        if ($this->esOp()) {
             if ($id) {
                 $empresa = $modelo->obtenerPorId($id);
                 if ($empresa) {
@@ -33,7 +25,7 @@ class CronogramaControlador {
             }
             $todasEmpresas = $id ? [] : $modelo->obtenerTodas();
         } else {
-            $empresa_id = $_SESSION['usuario_empresa_id'] ?? null;
+            $empresa_id = $this->empresaId() ?: null;
             if ($empresa_id) {
                 $empresa = $modelo->obtenerPorId((int) $empresa_id);
                 $etapas  = $modelo->cronograma((int) $empresa_id);

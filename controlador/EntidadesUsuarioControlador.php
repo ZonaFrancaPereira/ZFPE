@@ -1,15 +1,11 @@
 <?php
 
-class EntidadesUsuarioControlador {
+require_once __DIR__ . '/ControladorBase.php';
 
-    private PDO $db;
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
+class EntidadesUsuarioControlador extends ControladorBase {
 
     public function index(): void {
-        $empresa_id = $_SESSION['usuario_empresa_id'] ?? null;
+        $empresa_id = $this->empresaId() ?: null;
         $entidades  = [];
         $empresa    = null;
 

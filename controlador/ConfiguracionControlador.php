@@ -1,12 +1,8 @@
 <?php
 
-class ConfiguracionControlador {
+require_once __DIR__ . '/ControladorBase.php';
 
-    private PDO $db;
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
+class ConfiguracionControlador extends ControladorBase {
 
     public function index(): void {
         $totalFases       = (int) $this->db->query("SELECT COUNT(*) FROM fases")->fetchColumn();
@@ -95,6 +91,7 @@ class ConfiguracionControlador {
     }
 
     public function eliminarFase(?int $id): void {
+        $this->exigirPost('index.php?modulo=configuracion&accion=fases');
         if (!$id) { header('Location: index.php?modulo=configuracion&accion=fases'); exit; }
         $this->db->prepare("DELETE FROM fases WHERE id = ?")->execute([$id]);
         $_SESSION['flash_success'] = 'Fase eliminada. Las etapas asociadas quedaron sin fase.';
@@ -168,6 +165,7 @@ class ConfiguracionControlador {
     }
 
     public function eliminarEntidad(?int $id): void {
+        $this->exigirPost('index.php?modulo=configuracion&accion=entidades');
         if (!$id) { header('Location: index.php?modulo=configuracion&accion=entidades'); exit; }
 
         $stmt = $this->db->prepare("DELETE FROM entidades WHERE id = ?");
@@ -262,6 +260,7 @@ class ConfiguracionControlador {
     }
 
     public function eliminarEtapa(?int $id): void {
+        $this->exigirPost('index.php?modulo=configuracion&accion=etapas');
         if (!$id) { header('Location: index.php?modulo=configuracion&accion=etapas'); exit; }
 
         $stmt = $this->db->prepare("DELETE FROM etapas WHERE id = ?");
@@ -393,6 +392,7 @@ class ConfiguracionControlador {
     }
 
     public function eliminarRequisito(?int $id): void {
+        $this->exigirPost('index.php?modulo=configuracion&accion=requisitos');
         if (!$id) { header('Location: index.php?modulo=configuracion&accion=requisitos'); exit; }
 
         $stmt = $this->db->prepare("DELETE FROM requisitos WHERE id = ?");
@@ -454,6 +454,7 @@ class ConfiguracionControlador {
     }
 
     public function eliminarIndicador(?int $id): void {
+        $this->exigirPost('index.php?modulo=configuracion&accion=indicadores');
         if (!$id) { header('Location: index.php?modulo=configuracion&accion=indicadores'); exit; }
         require_once __DIR__ . '/../modelo/IndicadoresModelo.php';
         (new IndicadoresModelo($this->db))->eliminar($id);
@@ -593,6 +594,7 @@ class ConfiguracionControlador {
     }
 
     public function eliminarItem(?int $id): void {
+        $this->exigirPost('index.php?modulo=configuracion&accion=items');
         if (!$id) { header('Location: index.php?modulo=configuracion&accion=items'); exit; }
 
         $stmt = $this->db->prepare("DELETE FROM requisito_items WHERE id = ?");

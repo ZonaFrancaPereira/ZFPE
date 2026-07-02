@@ -8,16 +8,6 @@ $pageStyles = ['vista/assets/css/componentes.css'];
 ?>
 <?php require_once __DIR__ . '/../../parciales/cabecera.php'; ?>
 
-<?php if (!empty($_SESSION['flash_success'])): ?>
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
-  <div class="toast align-items-center text-bg-success border-0 show" role="alert">
-    <div class="d-flex">
-      <div class="toast-body"><i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-<?php unset($_SESSION['flash_success']); endif; ?>
 
 <?php
 $estadoColor = [
@@ -85,7 +75,7 @@ usort($faseGrupos, fn($a, $b) => $a['orden'] <=> $b['orden']);
       <div class="container-fluid">
 
         <!-- Encabezado empresa -->
-        <div class="card shadow-sm mb-4 border-0 bg-body-secondary">
+        <div class="card shadow-sm mb-4">
           <div class="card-body py-3">
             <div class="row align-items-center g-3">
               <div class="col-md-6">
@@ -112,37 +102,51 @@ usort($faseGrupos, fn($a, $b) => $a['orden'] <=> $b['orden']);
                 </div>
                 <small class="text-muted">Avance general del proyecto</small>
               </div>
-              <div class="col-md-2 text-md-end d-flex flex-column gap-2 align-items-end">
+              <div class="col-md-2 text-md-end d-flex flex-column gap-2 align-items-end justify-content-center">
                 <a href="index.php?modulo=seguimiento&id=<?= $empresa['id'] ?>"
-                   class="btn btn-primary btn-sm">
+                   class="btn btn-primary btn-sm w-100">
                   <i class="bi bi-clipboard-check me-1"></i> Seguimiento
                 </a>
-                <a href="index.php?modulo=cronograma&id=<?= $empresa['id'] ?>"
-                   class="btn btn-outline-info btn-sm">
-                  <i class="bi bi-calendar3 me-1"></i> Cronograma
-                </a>
-                <a href="index.php?modulo=reportes&id=<?= $empresa['id'] ?>"
-                   class="btn btn-outline-success btn-sm">
-                  <i class="bi bi-bar-chart-fill me-1"></i> Reporte
-                </a>
-                <a href="index.php?modulo=documentos&accion=ver&id=<?= $empresa['id'] ?>"
-                   class="btn btn-outline-warning btn-sm">
-                  <i class="bi bi-folder2-open me-1"></i> Documentos
-                </a>
-                <div class="d-flex gap-1">
-                  <a href="index.php?modulo=informes&accion=excel&id=<?= $empresa['id'] ?>"
-                     class="btn btn-outline-success btn-sm" title="Descargar informe en Excel">
-                    <i class="bi bi-file-earmark-excel"></i>
-                  </a>
-                  <a href="index.php?modulo=informes&accion=pdf&id=<?= $empresa['id'] ?>"
-                     class="btn btn-outline-danger btn-sm" title="Descargar informe en PDF">
-                    <i class="bi bi-file-earmark-pdf"></i>
-                  </a>
+                <div class="dropdown w-100">
+                  <button type="button" class="btn btn-outline-secondary btn-sm w-100 dropdown-toggle"
+                          data-bs-toggle="dropdown">
+                    <i class="bi bi-three-dots me-1"></i> Más acciones
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a class="dropdown-item" href="index.php?modulo=cronograma&id=<?= $empresa['id'] ?>">
+                        <i class="bi bi-calendar3 me-2 text-info"></i>Cronograma
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="index.php?modulo=reportes&id=<?= $empresa['id'] ?>">
+                        <i class="bi bi-bar-chart-fill me-2 text-success"></i>Reporte
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="index.php?modulo=documentos&accion=ver&id=<?= $empresa['id'] ?>">
+                        <i class="bi bi-folder2-open me-2 text-warning"></i>Documentos
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a class="dropdown-item" href="index.php?modulo=informes&accion=excel&id=<?= $empresa['id'] ?>">
+                        <i class="bi bi-file-earmark-excel me-2 text-success"></i>Descargar Excel
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="index.php?modulo=informes&accion=pdf&id=<?= $empresa['id'] ?>">
+                        <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Descargar PDF
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <a class="dropdown-item" href="index.php?modulo=empresas&accion=editar&id=<?= $empresa['id'] ?>">
+                        <i class="bi bi-pencil me-2"></i>Editar empresa
+                      </a>
+                    </li>
+                  </ul>
                 </div>
-                <a href="index.php?modulo=empresas&accion=editar&id=<?= $empresa['id'] ?>"
-                   class="btn btn-outline-secondary btn-sm">
-                  <i class="bi bi-pencil me-1"></i> Editar
-                </a>
               </div>
             </div>
           </div>
@@ -368,9 +372,11 @@ usort($faseGrupos, fn($a, $b) => $a['orden'] <=> $b['orden']);
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <a id="btnEliminarUsuario" href="#" class="btn btn-danger">
-          <i class="bi bi-trash me-1"></i> Eliminar
-        </a>
+        <form method="POST" id="formEliminarUsuario" class="m-0">
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash me-1"></i> Eliminar
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -380,7 +386,7 @@ usort($faseGrupos, fn($a, $b) => $a['orden'] <=> $b['orden']);
 document.getElementById('modalEliminarUsuario').addEventListener('show.bs.modal', function(e) {
   const btn = e.relatedTarget;
   document.getElementById('nombreUsuarioEliminar').textContent = btn.dataset.nombre;
-  document.getElementById('btnEliminarUsuario').href =
+  document.getElementById('formEliminarUsuario').action =
     'index.php?modulo=empresas&accion=eliminar-usuario&id=' + btn.dataset.id;
 });
 </script>

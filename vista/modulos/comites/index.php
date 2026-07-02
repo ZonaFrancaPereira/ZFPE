@@ -3,6 +3,7 @@
 $pageTitle  = 'Comités — ZFIP-E';
 $activePage = 'comites';
 $pageStyles = ['vista/assets/css/componentes.css'];
+$esOp       = in_array($_SESSION['usuario_rol'] ?? '', ['operaciones', 'admin'], true);
 
 $estadoBadge = [
     'programado' => ['bg-info',    'Programado'],
@@ -12,16 +13,6 @@ $estadoBadge = [
 ?>
 <?php require_once __DIR__ . '/../../parciales/cabecera.php'; ?>
 
-<?php if (!empty($_SESSION['flash_success'])): ?>
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
-  <div class="toast align-items-center text-bg-success border-0 show" role="alert">
-    <div class="d-flex">
-      <div class="toast-body"><i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-<?php unset($_SESSION['flash_success']); endif; ?>
 
 <div class="app-wrapper">
   <?php require_once __DIR__ . '/../../parciales/navegacion.php'; ?>
@@ -50,9 +41,11 @@ $estadoBadge = [
             <h5 class="card-title mb-0">
               <i class="bi bi-people-fill me-2 text-primary"></i>Comités registrados
             </h5>
+            <?php if ($esOp): ?>
             <a href="index.php?modulo=comites&accion=crear" class="btn btn-primary btn-sm">
               <i class="bi bi-plus-lg me-1"></i> Nuevo comité
             </a>
+            <?php endif; ?>
           </div>
 
           <div class="card-body p-0">
@@ -125,6 +118,7 @@ $estadoBadge = [
                            class="btn btn-sm btn-outline-primary me-1" title="Ver detalle">
                           <i class="bi bi-eye"></i>
                         </a>
+                        <?php if ($esOp): ?>
                         <a href="index.php?modulo=comites&accion=editar&id=<?= $c['id'] ?>"
                            class="btn btn-sm btn-outline-secondary me-1" title="Editar">
                           <i class="bi bi-pencil"></i>
@@ -134,6 +128,7 @@ $estadoBadge = [
                                 data-id="<?= $c['id'] ?>" data-titulo="<?= htmlspecialchars($c['titulo']) ?>">
                           <i class="bi bi-trash"></i>
                         </button>
+                        <?php endif; ?>
                       </td>
                     </tr>
                     <?php endforeach; ?>
@@ -165,9 +160,11 @@ $estadoBadge = [
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <a id="btnConfirmarEliminar" href="#" class="btn btn-danger">
-          <i class="bi bi-trash me-1"></i> Eliminar
-        </a>
+        <form method="POST" id="formEliminar" class="m-0">
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash me-1"></i> Eliminar
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -177,7 +174,7 @@ $estadoBadge = [
 document.getElementById('modalEliminar').addEventListener('show.bs.modal', function(e) {
   const btn = e.relatedTarget;
   document.getElementById('tituloComite').textContent = btn.dataset.titulo;
-  document.getElementById('btnConfirmarEliminar').href =
+  document.getElementById('formEliminar').action =
     'index.php?modulo=comites&accion=eliminar&id=' + btn.dataset.id;
 });
 </script>

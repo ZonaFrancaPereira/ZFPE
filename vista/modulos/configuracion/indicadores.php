@@ -31,13 +31,6 @@ $periodoLabel = ['mensual' => 'Mensual', 'trimestral' => 'Trimestral', 'semestra
     <div class="app-content">
       <div class="container-fluid">
 
-        <?php if (!empty($_SESSION['flash_success'])): ?>
-          <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($_SESSION['flash_success']) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-          <?php unset($_SESSION['flash_success']); ?>
-        <?php endif; ?>
 
         <div class="card shadow-sm">
           <div class="card-header d-flex align-items-center justify-content-between gap-2">
@@ -104,11 +97,12 @@ $periodoLabel = ['mensual' => 'Mensual', 'trimestral' => 'Trimestral', 'semestra
                            class="btn btn-sm btn-outline-warning" title="Editar">
                           <i class="bi bi-pencil"></i>
                         </a>
-                        <a href="index.php?modulo=configuracion&accion=eliminar-indicador&id=<?= $ind['id'] ?>"
-                           class="btn btn-sm btn-outline-danger" title="Eliminar"
-                           onclick="return confirm('¿Eliminar este indicador? Se quitará de todas las empresas asignadas.')">
-                          <i class="bi bi-trash"></i>
-                        </a>
+                        <form method="POST" action="index.php?modulo=configuracion&accion=eliminar-indicador&id=<?= $ind['id'] ?>"
+                              class="d-inline" onsubmit="return confirm('¿Eliminar este indicador? Se quitará de todas las empresas asignadas.')">
+                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
                       </td>
                     </tr>
                     <?php endforeach; ?>

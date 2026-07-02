@@ -12,16 +12,6 @@ $pageScripts = ['vista/assets/js/seguimiento.js'];
 ?>
 <?php require_once __DIR__ . '/../../parciales/cabecera.php'; ?>
 
-<?php if (!empty($_SESSION['flash_success'])): ?>
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
-  <div class="toast align-items-center text-bg-success border-0 show" role="alert">
-    <div class="d-flex">
-      <div class="toast-body"><i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-<?php unset($_SESSION['flash_success']); endif; ?>
 
 <?php
 $estadoBadge = [

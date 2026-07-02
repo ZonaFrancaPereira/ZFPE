@@ -33,27 +33,6 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
 ?>
 <?php require_once __DIR__ . '/../../parciales/cabecera.php'; ?>
 
-<?php if (!empty($_SESSION['flash_success'])): ?>
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
-  <div class="toast align-items-center text-bg-success border-0 show" role="alert">
-    <div class="d-flex">
-      <div class="toast-body"><i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-<?php unset($_SESSION['flash_success']); endif; ?>
-
-<?php if (!empty($_SESSION['flash_error'])): ?>
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
-  <div class="toast align-items-center text-bg-danger border-0 show" role="alert">
-    <div class="d-flex">
-      <div class="toast-body"><i class="bi bi-exclamation-triangle me-1"></i><?= htmlspecialchars($_SESSION['flash_error']) ?></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-<?php unset($_SESSION['flash_error']); endif; ?>
 
 <div class="app-wrapper">
   <?php require_once __DIR__ . '/../../parciales/navegacion.php'; ?>
@@ -130,7 +109,7 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
               $cumplido = $comp['estado'] === 'cumplido';
             ?>
             <div class="col-lg-6">
-              <div class="card shadow-sm h-100 compromiso-card compromiso-card--<?= $cumplido ? 'done' : $comp['estado'] ?>">
+              <div id="compromiso-<?= $comp['id'] ?>" class="card shadow-sm h-100 compromiso-card compromiso-card--<?= $cumplido ? 'done' : $comp['estado'] ?>">
                 <div class="card-header d-flex align-items-center justify-content-between gap-2">
                   <div class="d-flex align-items-center gap-2 min-w-0">
                     <span class="comite-avatar flex-shrink-0"><i class="bi bi-people-fill"></i></span>

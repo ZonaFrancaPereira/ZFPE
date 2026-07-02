@@ -6,11 +6,23 @@ $esOperaciones = ($_SESSION['usuario_rol'] ?? '') === 'operaciones';
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <div class="sidebar-brand">
     <a href="index.php" class="brand-link">
-      <img src="https://adminlte.io/themes/v3/dist/img/AdminLTELogo.png"
-           alt="Logo" class="brand-image rounded shadow" style="opacity:.8">
+      <span class="brand-image-zf rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0">
+        <i class="bi bi-shield-check"></i>
+      </span>
       <span class="brand-text fw-light">ZFIP-E</span>
     </a>
   </div>
+
+  <style>
+    .brand-image-zf {
+      width: 1.75rem;
+      height: 1.75rem;
+      margin-right: .5rem;
+      background: var(--zf-teal, #1993b8);
+      color: #fff;
+      font-size: .95rem;
+    }
+  </style>
 
   <div class="sidebar-wrapper">
     <nav class="mt-2">
@@ -28,6 +40,12 @@ $esOperaciones = ($_SESSION['usuario_rol'] ?? '') === 'operaciones';
             <a href="index.php?modulo=cronograma" class="nav-link <?= ($activePage ?? '') === 'cronograma' ? 'active' : '' ?>">
               <i class="nav-icon bi bi-calendar3"></i>
               <p>Cronograma</p>
+            </a>
+          </li>
+           <li class="nav-item">
+            <a href="index.php?modulo=comites" class="nav-link <?= ($activePage ?? '') === 'comites' ? 'active' : '' ?>">
+              <i class="nav-icon bi bi-people"></i>
+              <p>Comités</p>
             </a>
           </li>
           <li class="nav-item">
@@ -54,6 +72,7 @@ $esOperaciones = ($_SESSION['usuario_rol'] ?? '') === 'operaciones';
               <p>Reportes</p>
             </a>
           </li>
+         
         <?php endif; ?>
 
         <?php if ($esAdmin): ?>

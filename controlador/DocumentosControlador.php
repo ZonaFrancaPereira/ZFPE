@@ -1,8 +1,8 @@
 <?php
 
-class DocumentosControlador {
+require_once __DIR__ . '/ControladorBase.php';
 
-    private PDO $db;
+class DocumentosControlador extends ControladorBase {
 
     private const TIPOS_PERMITIDOS = [
         'application/pdf',
@@ -18,13 +18,6 @@ class DocumentosControlador {
     private const EXTENSIONES_PERMITIDAS = ['pdf','doc','docx','xls','xlsx','jpg','jpeg','png','zip'];
     private const TAMANO_MAX  = 10 * 1024 * 1024;
     private const DIR_UPLOADS = __DIR__ . '/../uploads/documentos/';
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
-
-    private function rol(): string  { return $_SESSION['usuario_rol'] ?? ''; }
-    private function esOp(): bool   { return in_array($this->rol(), ['operaciones','admin']); }
 
     public function index(?int $empresa_id = null): void {
         $empresa    = null;
@@ -163,6 +156,8 @@ class DocumentosControlador {
     }
 
     public function eliminar(?int $id): void {
+        $this->exigirPost('index.php?modulo=documentos');
+
         // Solo operaciones puede eliminar
         if (!$this->esOp() || !$id) {
             header('Location: index.php?modulo=documentos');

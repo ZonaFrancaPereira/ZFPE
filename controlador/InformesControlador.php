@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/ControladorBase.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -14,9 +15,7 @@ use PhpOffice\PhpSpreadsheet\Chart\Title;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-class InformesControlador {
-
-    private PDO $db;
+class InformesControlador extends ControladorBase {
 
     public const ESTADO_LABEL = [
         'pendiente'   => 'Pendiente',
@@ -31,10 +30,6 @@ class InformesControlador {
         'cumplido'    => '198754',
         'no_aplica'   => 'adb5bd',
     ];
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
 
     public function excel(?int $empresa_id): void {
         $empresa_id = $this->resolverEmpresaId($empresa_id);
@@ -53,12 +48,10 @@ class InformesControlador {
     }
 
     private function resolverEmpresaId(?int $empresa_id): ?int {
-        $rol = $_SESSION['usuario_rol'] ?? '';
-        if (in_array($rol, ['admin', 'operaciones'], true)) {
+        if ($this->esOp()) {
             return $empresa_id ?: null;
         }
-        $propia = (int) ($_SESSION['usuario_empresa_id'] ?? 0);
-        return $propia ?: null;
+        return $this->empresaId() ?: null;
     }
 
     private function baseUrl(): string {
@@ -74,6 +67,214 @@ class InformesControlador {
 
     private function urlDocumento(int $doc_id): string {
         return $this->baseUrl() . '/index.php?modulo=documentos&accion=descargar&id=' . $doc_id;
+    }
+
+    private const FUENTE_REGULAR = __DIR__ . '/../vendor/dompdf/dompdf/lib/fonts/DejaVuSans.ttf';
+    private const FUENTE_NEGRITA = __DIR__ . '/../vendor/dompdf/dompdf/lib/fonts/DejaVuSans-Bold.ttf';
+
+    /**
+     * Dibuja con GD la misma gráfica que ve el usuario en el módulo de Indicadores
+     * (Chart.js no se puede ejecutar dentro del PDF, así que se genera como imagen).
+     * Soporta línea, área y barras tal cual se configuraron; radar/combo caen a línea
+     * por ser mucho más costosos de reproducir con GD y muy poco usados.
+     *
+     * Se dibuja al doble de tamaño final (@2x) y se deja que el PDF la escale hacia
+     * abajo por CSS: es la forma más simple de lograr que las líneas y el texto se
+     * vean suaves, ya que GD no antialiasa bien los trazos a resolución nativa.
+     */
+    private function generarGraficoIndicador(array $labels, array $valores, ?float $meta, string $tipo, string $unidad): string {
+        $n = count($valores);
+        if ($n === 0) return '';
+
+        $tipo = in_array($tipo, ['linea', 'area', 'barra', 'torta'], true) ? $tipo : 'linea';
+
+        $ancho = 1240; $alto = 440; // @2x — se muestra a 620x220
+        $img = imagecreatetruecolor($ancho, $alto);
+        imageantialias($img, true);
+
+        $blanco     = imagecolorallocate($img, 255, 255, 255);
+        $gris       = imagecolorallocate($img, 92, 102, 112);
+        $grisClaro  = imagecolorallocate($img, 233, 236, 239);
+        $texto      = imagecolorallocate($img, 73, 80, 87);
+        $teal       = imagecolorallocate($img, 0x19, 0x93, 0xb8);
+        $tealOscuro = imagecolorallocate($img, 0x10, 0x6b, 0x87);
+        $tealClaro  = imagecolorallocatealpha($img, 0x19, 0x93, 0xb8, 100);
+        $verde      = imagecolorallocate($img, 25, 135, 84);
+
+        imagefilledrectangle($img, 0, 0, $ancho, $alto, $blanco);
+
+        if ($tipo === 'torta') {
+            $this->dibujarTorta($img, $ancho, $alto, $labels, $valores, $texto, $gris);
+            return $this->exportarPng($img);
+        }
+
+        $padL = 90; $padR = 30; $padT = 30; $padB = 60;
+        $plotW = $ancho - $padL - $padR;
+        $plotH = $alto - $padT - $padB;
+
+        $tope = max(array_merge($valores, [$meta ?? 0]));
+        $tope = $tope > 0 ? $tope * 1.18 : 1;
+
+        // Cuadrícula horizontal con etiquetas de escala (estilo Chart.js)
+        $pasos = 4;
+        for ($p = 0; $p <= $pasos; $p++) {
+            $val = $tope / $pasos * $p;
+            $y   = (int) ($padT + $plotH - ($val / $tope) * $plotH);
+            imageline($img, $padL, $y, $padL + $plotW, $y, $grisClaro);
+            $this->texto($img, self::FUENTE_REGULAR, 15, $padL - 14, $y, number_format($val, 0), $gris, 'derecha');
+        }
+        imageline($img, $padL, $padT, $padL, $padT + $plotH, $gris);
+
+        // Línea de meta (verde punteada) por encima de la cuadrícula
+        if ($meta !== null && $meta > 0) {
+            $yMeta = (int) ($padT + $plotH - ($meta / $tope) * $plotH);
+            for ($x = $padL; $x < $padL + $plotW; $x += 14) {
+                imagesetthickness($img, 3);
+                imageline($img, $x, $yMeta, (int) min($x + 7, $padL + $plotW), $yMeta, $verde);
+            }
+            $this->texto($img, self::FUENTE_NEGRITA, 15, $padL + $plotW, $yMeta - 20, 'Meta: ' . number_format($meta, 1), $verde, 'derecha');
+        }
+
+        if ($tipo === 'barra') {
+            $espacio    = $plotW / $n;
+            $anchoBarra = $espacio * 0.55;
+            foreach ($valores as $i => $v) {
+                $x = $padL + $i * $espacio + ($espacio - $anchoBarra) / 2;
+                $h = ($v / $tope) * $plotH;
+                $y = $padT + $plotH - $h;
+                // Sombra sutil + relleno degradado (más claro arriba, teal sólido abajo)
+                imagefilledrectangle($img, (int) $x + 3, (int) $y + 3, (int) ($x + $anchoBarra) + 3, $padT + $plotH, $grisClaro);
+                $this->rectanguloDegradado($img, (int) $x, (int) $y, (int) ($x + $anchoBarra), $padT + $plotH, $teal, $tealOscuro);
+                $this->texto($img, self::FUENTE_NEGRITA, 16, (int) ($x + $anchoBarra / 2), (int) $y - 12, number_format($v, 1), $tealOscuro, 'centro');
+            }
+        } else {
+            $espacio = $n > 1 ? $plotW / ($n - 1) : 0;
+            $puntos  = [];
+            foreach ($valores as $i => $v) {
+                $x = $padL + $i * $espacio;
+                $y = $padT + $plotH - ($v / $tope) * $plotH;
+                $puntos[] = [$x, $y];
+            }
+            if ($tipo === 'area') {
+                $poly = [$padL, $padT + $plotH];
+                foreach ($puntos as $p) { $poly[] = $p[0]; $poly[] = $p[1]; }
+                $poly[] = $padL + $plotW; $poly[] = $padT + $plotH;
+                imagefilledpolygon($img, $poly, (int) (count($poly) / 2), $tealClaro);
+            }
+            imagesetthickness($img, 5);
+            for ($i = 0; $i < count($puntos) - 1; $i++) {
+                imageline($img, (int) $puntos[$i][0], (int) $puntos[$i][1], (int) $puntos[$i + 1][0], (int) $puntos[$i + 1][1], $teal);
+            }
+            imagesetthickness($img, 1);
+            $ultimo = count($puntos) - 1;
+            foreach ($puntos as $i => $p) {
+                // Punto con halo blanco (look de Chart.js): círculo blanco + anillo de color
+                imagefilledellipse($img, (int) $p[0], (int) $p[1], 20, 20, $blanco);
+                imagefilledellipse($img, (int) $p[0], (int) $p[1], 14, 14, $teal);
+                $arriba = $i % 2 === 0;
+                // El primero y el último se alinean hacia adentro para no salirse del lienzo
+                // ni encimarse con la etiqueta del eje Y.
+                $alinear = $i === 0 ? 'izquierda' : ($i === $ultimo ? 'derecha' : 'centro');
+                $xEtiq   = $i === 0 ? (int) $p[0] + 10 : ($i === $ultimo ? (int) $p[0] - 10 : (int) $p[0]);
+                $this->texto($img, self::FUENTE_NEGRITA, 16, $xEtiq, (int) $p[1] + ($arriba ? -28 : 16), number_format($valores[$i], 1), $tealOscuro, $alinear);
+            }
+        }
+
+        // Etiquetas del eje X (períodos): la primera y la última se alinean hacia
+        // adentro para que no queden cortadas por el borde del lienzo.
+        $ultimoLabel = count($labels) - 1;
+        foreach ($labels as $i => $lab) {
+            $x = $tipo === 'barra' ? $padL + $i * ($plotW / $n) + ($plotW / $n) / 2 : $padL + $i * $espacio;
+            $alinear = $i === 0 ? 'izquierda' : ($i === $ultimoLabel ? 'derecha' : 'centro');
+            $xEtiq   = $i === 0 ? (int) $x - 4 : ((int) $i === $ultimoLabel ? (int) $x + 4 : (int) $x);
+            $this->texto($img, self::FUENTE_REGULAR, 15, $xEtiq, $padT + $plotH + 18, $lab, $gris, $alinear);
+        }
+
+        if ($unidad !== '') {
+            $this->texto($img, self::FUENTE_REGULAR, 15, $padL, 8, 'Unidad: ' . $unidad, $gris, 'izquierda');
+        }
+
+        return $this->exportarPng($img);
+    }
+
+    /** Rellena un rectángulo con un degradado vertical entre dos colores (barras con volumen). */
+    private function rectanguloDegradado($img, int $x1, int $y1, int $x2, int $y2, int $colorArriba, int $colorAbajo): void {
+        $alturaTotal = max($y2 - $y1, 1);
+        [$r1, $g1, $b1] = [($colorArriba >> 16) & 0xFF, ($colorArriba >> 8) & 0xFF, $colorArriba & 0xFF];
+        [$r2, $g2, $b2] = [($colorAbajo >> 16) & 0xFF, ($colorAbajo >> 8) & 0xFF, $colorAbajo & 0xFF];
+        for ($y = $y1; $y <= $y2; $y++) {
+            $t = ($y - $y1) / $alturaTotal;
+            $color = imagecolorallocate(
+                $img,
+                (int) ($r1 + ($r2 - $r1) * $t),
+                (int) ($g1 + ($g2 - $g1) * $t),
+                (int) ($b1 + ($b2 - $b1) * $t)
+            );
+            imageline($img, $x1, $y, $x2, $y, $color);
+        }
+    }
+
+    /** Escribe texto con TrueType (nítido) alineado a izquierda/centro/derecha sobre un punto (x,y). */
+    private function texto($img, string $fuente, int $tamano, int $x, int $y, string $txt, int $color, string $alinear = 'izquierda'): void {
+        $caja = imagettfbbox($tamano, 0, $fuente, $txt);
+        $anchoTxt = $caja[2] - $caja[0];
+        $altoTxt  = $caja[1] - $caja[7];
+        $x0 = match ($alinear) {
+            'centro'   => $x - (int) ($anchoTxt / 2),
+            'derecha'  => $x - $anchoTxt,
+            default    => $x,
+        };
+        imagettftext($img, $tamano, 0, $x0, $y + $altoTxt, $color, $fuente, $txt);
+    }
+
+    private function dibujarTorta($img, int $ancho, int $alto, array $labels, array $valores, int $texto, int $gris): void {
+        $total = array_sum($valores) ?: 1;
+        $cx = (int) ($ancho * 0.32); $cy = (int) ($alto / 2); $r = (int) ($alto * 0.36);
+
+        // Paleta de colores distinguibles (misma familia de marca + variaciones de tono)
+        $hexPaleta = ['1993b8', '198754', 'ffc107', 'dc3545', '6f42c1', 'fd7e14', '20c997', '6c757d'];
+        $paleta = [];
+        foreach ($hexPaleta as $hex) {
+            $paleta[] = imagecolorallocate($img, hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2)));
+        }
+
+        $inicio = 0;
+        foreach ($valores as $i => $v) {
+            $barrido = $v / $total * 360;
+            $color   = $paleta[$i % count($paleta)];
+            imagefilledarc($img, $cx, $cy, $r * 2, $r * 2, (int) $inicio, (int) ($inicio + max($barrido, 0.5)), $color, IMG_ARC_PIE);
+            $inicio += $barrido;
+        }
+        // Borde blanco entre porciones para separarlas visualmente
+        $inicio = 0;
+        imagesetthickness($img, 4);
+        foreach ($valores as $v) {
+            $barrido = $v / $total * 360;
+            $rad = deg2rad($inicio);
+            imageline($img, $cx, $cy, (int) ($cx + cos($rad) * $r), (int) ($cy + sin($rad) * $r), 0xFFFFFF);
+            $inicio += $barrido;
+        }
+
+        // Leyenda: una sola línea por período (nombre + valor + porcentaje) para
+        // evitar que el texto de renglones distintos se superponga.
+        $alturaEntrada = 46;
+        $ly = $cy - (int) (count($labels) * $alturaEntrada / 2);
+        foreach ($labels as $i => $lab) {
+            $color = $paleta[$i % count($paleta)];
+            $pct   = round($valores[$i] / $total * 100, 1);
+            imagefilledrectangle($img, $cx + $r + 50, $ly + 4, $cx + $r + 70, $ly + 24, $color);
+            $this->texto($img, self::FUENTE_NEGRITA, 16, $cx + $r + 80, $ly, $lab . ':', $texto);
+            $this->texto($img, self::FUENTE_REGULAR, 15, $cx + $r + 80, $ly + 24, number_format($valores[$i], 1) . " ($pct%)", $gris);
+            $ly += $alturaEntrada;
+        }
+    }
+
+    private function exportarPng($img): string {
+        ob_start();
+        imagepng($img);
+        $png = ob_get_clean();
+        imagedestroy($img);
+        return 'data:image/png;base64,' . base64_encode($png);
     }
 
     private function urlIndicadores(int $empresa_id): string {

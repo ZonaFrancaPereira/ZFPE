@@ -2,23 +2,21 @@
 
 require_once __DIR__ . '/../modelo/IndicadoresModelo.php';
 require_once __DIR__ . '/../modelo/EmpresasModelo.php';
+require_once __DIR__ . '/ControladorBase.php';
 
-class IndicadoresControlador {
+class IndicadoresControlador extends ControladorBase {
 
     private IndicadoresModelo $modelo;
     private EmpresasModelo    $modeloEmpresas;
 
     public function __construct(PDO $db) {
+        parent::__construct($db);
         $this->modelo         = new IndicadoresModelo($db);
         $this->modeloEmpresas = new EmpresasModelo($db);
     }
 
     public function index(?int $empresa_id): void {
-        $rol           = $_SESSION['usuario_rol'] ?? '';
-        $esOperaciones = $rol === 'operaciones';
-        $esAdmin       = $rol === 'admin';
-
-        if ($esOperaciones || $esAdmin) {
+        if ($this->esOp()) {
             if (!$empresa_id) {
                 $todasEmpresas = $this->modeloEmpresas->obtenerTodas();
                 require_once __DIR__ . '/../vista/modulos/indicadores/selector.php';
@@ -28,7 +26,7 @@ class IndicadoresControlador {
             $asignados   = $this->modelo->obtenerPorEmpresa($empresa_id);
             $disponibles = $this->modelo->obtenerNoAsignados($empresa_id);
         } else {
-            $empresa_id  = (int) ($_SESSION['usuario_empresa_id'] ?? 0);
+            $empresa_id  = $this->empresaId();
             $empresa     = $empresa_id ? $this->modeloEmpresas->obtenerPorId($empresa_id) : null;
             $asignados   = $empresa_id ? $this->modelo->obtenerPorEmpresa($empresa_id) : [];
             $disponibles = [];

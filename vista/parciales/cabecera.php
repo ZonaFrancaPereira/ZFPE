@@ -28,9 +28,22 @@
 </head>
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
 
-<?php if (!empty($_SESSION['flash_error'])): ?>
+<?php if (!empty($_SESSION['flash_success']) || !empty($_SESSION['flash_error'])): ?>
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
-  <div class="toast align-items-center text-bg-danger border-0 show" role="alert">
+  <?php if (!empty($_SESSION['flash_success'])): ?>
+  <div class="toast align-items-center text-bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-check-circle me-1"></i>
+        <?= htmlspecialchars($_SESSION['flash_success']) ?>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+  <?php unset($_SESSION['flash_success']); ?>
+  <?php endif; ?>
+  <?php if (!empty($_SESSION['flash_error'])): ?>
+  <div class="toast align-items-center text-bg-danger border-0" role="alert">
     <div class="d-flex">
       <div class="toast-body">
         <i class="bi bi-exclamation-triangle me-1"></i>
@@ -39,6 +52,7 @@
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>
   </div>
+  <?php unset($_SESSION['flash_error']); ?>
+  <?php endif; ?>
 </div>
-<?php unset($_SESSION['flash_error']); ?>
 <?php endif; ?>

@@ -37,7 +37,7 @@ $esOperaciones = $rol === 'operaciones';
 $modulosAdmin       = ['usuarios'];
 $modulosOperaciones = ['empresas', 'configuracion', 'comites', 'seguimiento', 'indicadores'];
 $modulosUsuario     = ['cronograma', 'entidades', 'documentos', 'reportes', 'mis-compromisos', 'indicadores', 'informes'];
-$modulosValidos     = array_merge($modulosAdmin, $modulosOperaciones, $modulosUsuario, ['manual']);
+$modulosValidos     = array_merge($modulosAdmin, $modulosOperaciones, $modulosUsuario, ['manual', 'perfil', 'notificaciones']);
 
 $db = conectar();
 
@@ -55,7 +55,8 @@ if (in_array($modulo, $modulosAdmin, true) && !$esAdmin) {
     exit;
 }
 
-if (in_array($modulo, $modulosOperaciones, true) && !$esAdmin && !$esOperaciones) {
+if (in_array($modulo, $modulosOperaciones, true) && !$esAdmin && !$esOperaciones
+    && !in_array($modulo, ['comites'], true)) {
     $_SESSION['flash_error'] = 'No tienes permiso para acceder a esa sección.';
     header('Location: index.php');
     exit;
@@ -189,6 +190,24 @@ match ($modulo) {
 
     'manual' => (function () {
         require_once __DIR__ . '/vista/modulos/manual/index.php';
+    })(),
+
+    'perfil' => (function () use ($accion, $db) {
+        require_once __DIR__ . '/controlador/PerfilControlador.php';
+        $ctrl = new PerfilControlador($db);
+        match ($accion) {
+            'actualizar' => $ctrl->actualizar(),
+            default      => $ctrl->index(),
+        };
+    })(),
+
+    'notificaciones' => (function () use ($accion, $db) {
+        require_once __DIR__ . '/controlador/NotificacionesControlador.php';
+        $ctrl = new NotificacionesControlador($db);
+        match ($accion) {
+            'marcar-leidas' => $ctrl->marcarLeidas(),
+            default         => null,
+        };
     })(),
 
     'mis-compromisos' => (function () use ($accion, $id, $db) {

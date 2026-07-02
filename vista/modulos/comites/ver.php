@@ -6,6 +6,8 @@
 $pageTitle  = 'Detalle del comité — ZFIP-E';
 $activePage = 'comites';
 $pageStyles = ['vista/assets/css/componentes.css'];
+$esOp       = in_array($_SESSION['usuario_rol'] ?? '', ['operaciones', 'admin'], true);
+$miNombre   = $_SESSION['usuario_nombre'] ?? '';
 
 $estadoBadge = [
     'programado' => ['bg-info text-dark', 'Programado'],
@@ -27,16 +29,6 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
 ?>
 <?php require_once __DIR__ . '/../../parciales/cabecera.php'; ?>
 
-<?php if (!empty($_SESSION['flash_success'])): ?>
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
-  <div class="toast align-items-center text-bg-success border-0 show" role="alert">
-    <div class="d-flex">
-      <div class="toast-body"><i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-<?php unset($_SESSION['flash_success']); endif; ?>
 
 <div class="app-wrapper">
   <?php require_once __DIR__ . '/../../parciales/navegacion.php'; ?>
@@ -84,9 +76,11 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
                   <p class="mb-0 text-muted"><?= nl2br(htmlspecialchars($comite['descripcion'])) ?></p>
                 <?php endif; ?>
               </div>
+              <?php if ($esOp): ?>
               <a href="index.php?modulo=comites&accion=editar&id=<?= $comite['id'] ?>" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-pencil me-1"></i>Editar
               </a>
+              <?php endif; ?>
             </div>
           </div>
         </div>
@@ -125,6 +119,7 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
         </div>
 
         <div class="row g-4">
+          <?php if ($esOp): ?>
           <!-- Agregar compromiso -->
           <div class="col-lg-5">
             <div class="card shadow-sm">
@@ -186,9 +181,10 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
               </form>
             </div>
           </div>
+          <?php endif; ?>
 
           <!-- Lista de compromisos -->
-          <div class="col-lg-7">
+          <div class="<?= $esOp ? 'col-lg-7' : 'col-12' ?>">
             <div class="card shadow-sm">
               <div class="card-header d-flex align-items-center gap-2">
                 <i class="bi bi-list-check text-primary fs-5"></i>
@@ -210,7 +206,7 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
                       $totalDocsComp = array_sum(array_map(fn($h) => count($h['documentos']), $historial));
                       $collapseId = 'historial-' . $comp['id'];
                     ?>
-                    <div class="list-group-item py-3">
+                    <div id="compromiso-<?= $comp['id'] ?>" class="list-group-item py-3">
                       <div class="d-flex align-items-start justify-content-between gap-2">
                         <div class="flex-grow-1">
                           <div class="fw-semibold mb-1"><?= htmlspecialchars($comp['descripcion']) ?></div>
@@ -253,6 +249,7 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
                                 <?php if (!empty($h['observaciones'])): ?>
                                   <div class="text-muted"><?= nl2br(htmlspecialchars($h['observaciones'])) ?></div>
                                 <?php endif; ?>
+                                <?php if ($esOp || $comp['responsable'] === $miNombre): ?>
                                 <?php foreach ($h['documentos'] as $doc): ?>
                                 <div class="d-flex align-items-center gap-1">
                                   <i class="bi bi-paperclip text-primary"></i>
@@ -260,6 +257,7 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
                                      title="Descargar"><?= htmlspecialchars($doc['nombre_original']) ?></a>
                                 </div>
                                 <?php endforeach; ?>
+                                <?php endif; ?>
                               </li>
                               <?php endforeach; ?>
                             </ul>
@@ -268,6 +266,7 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
                         </div>
                         <div class="d-flex align-items-center gap-1 flex-shrink-0">
                           <span class="badge <?= $cbadge ?>"><?= $ctxt ?></span>
+                          <?php if ($esOp): ?>
                           <button type="button" class="btn btn-sm btn-outline-secondary ms-1"
                                   data-bs-toggle="modal" data-bs-target="#modalActualizar"
                                   data-id="<?= $comp['id'] ?>"
@@ -281,6 +280,12 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
                                   data-desc="<?= htmlspecialchars(mb_substr($comp['descripcion'], 0, 60)) ?>">
                             <i class="bi bi-trash"></i>
                           </button>
+                          <?php elseif ($comp['responsable'] === $miNombre && $comp['estado'] !== 'cumplido'): ?>
+                          <a href="index.php?modulo=mis-compromisos#compromiso-<?= $comp['id'] ?>"
+                             class="btn btn-sm btn-outline-primary ms-1" title="Completar este compromiso">
+                            <i class="bi bi-pencil-square"></i>
+                          </a>
+                          <?php endif; ?>
                         </div>
                       </div>
                     </div>
@@ -347,7 +352,9 @@ $pct       = $totalComp > 0 ? round($cumplidos / $totalComp * 100) : 0;
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <a id="btnEliminarComp" href="#" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Eliminar</a>
+        <form method="POST" id="formEliminarComp" class="m-0">
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Eliminar</button>
+        </form>
       </div>
     </div>
   </div>
@@ -365,7 +372,7 @@ document.getElementById('modalActualizar').addEventListener('show.bs.modal', fun
 document.getElementById('modalEliminarComp').addEventListener('show.bs.modal', function(e) {
   const btn = e.relatedTarget;
   document.getElementById('descComp').textContent = btn.dataset.desc;
-  document.getElementById('btnEliminarComp').href =
+  document.getElementById('formEliminarComp').action =
     'index.php?modulo=comites&accion=eliminar-compromiso&id=' + btn.dataset.id;
 });
 </script>

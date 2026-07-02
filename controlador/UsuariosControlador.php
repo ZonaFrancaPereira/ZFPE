@@ -1,12 +1,14 @@
 <?php
 
 require_once __DIR__ . '/../modelo/UsuariosModelo.php';
+require_once __DIR__ . '/ControladorBase.php';
 
-class UsuariosControlador {
+class UsuariosControlador extends ControladorBase {
 
     private UsuariosModelo $modelo;
 
     public function __construct(PDO $db) {
+        parent::__construct($db);
         $this->modelo = new UsuariosModelo($db);
     }
 
@@ -35,6 +37,7 @@ class UsuariosControlador {
     }
 
     public function eliminar(int $id): void {
+        $this->exigirPost('index.php?modulo=usuarios');
         $this->modelo->eliminar($id);
         header('Location: index.php?modulo=usuarios');
         exit;

@@ -105,11 +105,12 @@ $pageScripts = ['vista/assets/js/usuarios-index.js'];
                            class="btn btn-sm btn-outline-warning" title="Editar">
                           <i class="bi bi-pencil"></i>
                         </a>
-                        <a href="index.php?modulo=usuarios&accion=eliminar&id=<?= $u['id'] ?>"
-                           class="btn btn-sm btn-outline-danger" title="Eliminar"
-                           onclick="return confirm('¿Eliminar este usuario?')">
-                          <i class="bi bi-trash"></i>
-                        </a>
+                        <form method="POST" action="index.php?modulo=usuarios&accion=eliminar&id=<?= $u['id'] ?>"
+                              class="d-inline" onsubmit="return confirm('¿Eliminar este usuario?')">
+                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
                       </td>
                     </tr>
                   <?php endforeach; ?>

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/ControladorBase.php';
+
 /**
  * Vista del usuario de empresa (rol "usuario") sobre los compromisos de
  * comité donde él es el responsable. Permite actualizar estado/solución
@@ -11,9 +13,7 @@
  * ComitesModelo::obtenerCompromisoDeUsuario() para evitar que alguien
  * edite o descargue documentos de un compromiso ajeno.
  */
-class MisCompromisosControlador {
-
-    private PDO $db;
+class MisCompromisosControlador extends ControladorBase {
 
     private const TIPOS_PERMITIDOS = [
         'application/pdf',
@@ -29,18 +29,6 @@ class MisCompromisosControlador {
     private const EXTENSIONES_PERMITIDAS = ['pdf','doc','docx','xls','xlsx','jpg','jpeg','png','zip'];
     private const TAMANO_MAX  = 10 * 1024 * 1024;
     private const DIR_UPLOADS = __DIR__ . '/../uploads/compromisos/';
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
-
-    private function nombreUsuario(): string {
-        return $_SESSION['usuario_nombre'] ?? '';
-    }
-
-    private function empresaId(): int {
-        return (int) ($_SESSION['usuario_empresa_id'] ?? 0);
-    }
 
     public function index(): void {
         require_once __DIR__ . '/../modelo/ComitesModelo.php';

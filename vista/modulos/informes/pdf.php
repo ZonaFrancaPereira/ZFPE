@@ -32,10 +32,12 @@ $nombresIndicador    = array_column($indicadores, 'nombre', 'id');
     .badge { display: inline-block; padding: 2px 7px; border-radius: 8px; color: #fff; font-size: 8px; }
     .legend-chip { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 3px; }
     .legend-item { display: inline-block; margin-right: 14px; font-size: 9px; }
-    .dist-bar { display: table; width: 100%; height: 20px; border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
-    .dist-seg { display: table-cell; }
-    .fase-bar-track { background: #eee; border-radius: 3px; height: 10px; margin: 2px 0 8px; }
-    .fase-bar-fill { background: #1993b8; height: 10px; border-radius: 3px; }
+    .dist-table { width: 100%; height: 20px; border-collapse: collapse; margin-bottom: 8px; }
+    .dist-table td { padding: 0; border: 0; height: 20px; }
+    .fase-label-table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+    .fase-label-table td { padding: 0; border: 0; font-size: 9px; }
+    .bar-track { background: #eee; border-radius: 3px; height: 10px; margin: 2px 0 8px; }
+    .bar-fill { background: #1993b8; height: 10px; border-radius: 3px; }
     .etapa-titulo { font-size: 11px; font-weight: bold; color: #17607a; margin: 10px 0 4px; }
     .req-box { border: 1px solid #ddd; border-radius: 3px; padding: 6px 8px; margin-bottom: 8px; page-break-inside: avoid; }
     .req-header { font-size: 10.5px; font-weight: bold; margin-bottom: 2px; }
@@ -65,22 +67,29 @@ $nombresIndicador    = array_column($indicadores, 'nombre', 'id');
     </table>
 
     <h2>Distribución de requisitos por estado</h2>
-    <div class="dist-bar">
-        <?php foreach ($estadoLabel as $key => $label): $pct = $totalEstados ? round($conteoEstados[$key] / $totalEstados * 100, 1) : 0; if ($pct <= 0) continue; ?>
-        <div class="dist-seg" style="width:<?= $pct ?>%; background:#<?= $estadoColor[$key] ?>;">&nbsp;</div>
+    <?php if ($totalEstados === 0): ?>
+        <p>No hay requisitos configurados todavía.</p>
+    <?php else: ?>
+    <table class="dist-table"><tr>
+        <?php foreach ($estadoLabel as $key => $label): $pct = round(($conteoEstados[$key] ?? 0) / $totalEstados * 100, 1); if ($pct <= 0) continue; ?>
+        <td style="width:<?= $pct ?>%; background:#<?= $estadoColor[$key] ?>;">&nbsp;</td>
         <?php endforeach; ?>
-    </div>
+    </tr></table>
     <div>
         <?php foreach ($estadoLabel as $key => $label): ?>
         <span class="legend-item"><span class="legend-chip" style="background:#<?= $estadoColor[$key] ?>;"></span><?= $label ?>: <strong><?= $conteoEstados[$key] ?? 0 ?></strong></span>
         <?php endforeach; ?>
     </div>
+    <?php endif; ?>
 
     <h2>Avance por fase</h2>
     <?php foreach ($avancePorFase as $af): ?>
     <div>
-        <div style="display:flex;justify-content:space-between;font-size:9px;"><span><?= htmlspecialchars($af['fase']) ?></span><span><?= $af['avance'] ?>%</span></div>
-        <div class="fase-bar-track"><div class="fase-bar-fill" style="width:<?= $af['avance'] ?>%;"></div></div>
+        <table class="fase-label-table"><tr>
+            <td style="text-align:left;"><?= htmlspecialchars($af['fase']) ?></td>
+            <td style="text-align:right; width:40px;"><?= $af['avance'] ?>%</td>
+        </tr></table>
+        <div class="bar-track"><div class="bar-fill" style="width:<?= $af['avance'] ?>%;"></div></div>
     </div>
     <?php endforeach; ?>
 
@@ -89,6 +98,7 @@ $nombresIndicador    = array_column($indicadores, 'nombre', 'id');
         <h3 class="fase-titulo">Fase: <?= htmlspecialchars($fase['nombre']) ?></h3>
         <?php foreach ($fase['etapas'] as $etapa): ?>
             <div class="etapa-titulo"><?= htmlspecialchars($etapa['etapa_nombre']) ?> — <?= $etapa['avance'] ?>% de avance</div>
+            <div class="bar-track"><div class="bar-fill" style="width:<?= $etapa['avance'] ?>%;"></div></div>
             <?php if (empty($etapa['requisitos'])): ?>
                 <p>Sin requisitos configurados.</p>
             <?php endif; ?>
@@ -205,8 +215,22 @@ $nombresIndicador    = array_column($indicadores, 'nombre', 'id');
         </tbody>
     </table>
 
+    <?php foreach ($indicadores as $i):
+        $valoresInd = $indicadorHistorial[$i['id']] ?? [];
+        if (empty($valoresInd)) continue;
+        $etiquetas  = array_column($valoresInd, 'periodo');
+        $numericos  = array_map(fn($v) => (float) $v['valor'], $valoresInd);
+        $metaInd    = $i['meta'] !== null ? (float) $i['meta'] : null;
+        $imagenGraf = $this->generarGraficoIndicador($etiquetas, $numericos, $metaInd, $i['tipo_grafico'] ?? 'linea', $i['unidad'] ?? '');
+    ?>
+    <div class="subtitulo"><?= htmlspecialchars($i['nombre']) ?> — gráfica de histórico<?= $metaInd !== null ? ' (meta: ' . number_format($metaInd, 2, ',', '.') . ')' : '' ?></div>
+    <?php if ($imagenGraf): ?>
+        <img src="<?= $imagenGraf ?>" style="width:100%; max-width:460px; margin-bottom:10px;">
+    <?php endif; ?>
+    <?php endforeach; ?>
+
     <?php if (!empty($indicadorHistorial)): ?>
-    <div class="subtitulo">Histórico de valores por período</div>
+    <div class="subtitulo">Histórico de valores por período (detalle)</div>
     <table>
         <thead><tr><th>Indicador</th><th>Período</th><th>Valor</th><th>Observaciones</th><th>Registrado por</th><th>Fecha</th></tr></thead>
         <tbody>

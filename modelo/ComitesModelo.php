@@ -22,6 +22,23 @@ class ComitesModelo {
         ")->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function listarPorEmpresa(int $empresa_id): array {
+        $stmt = $this->db->prepare("
+            SELECT c.*,
+                   e.razon_social          AS empresa_nombre,
+                   COUNT(DISTINCT cc.id)   AS total_compromisos,
+                   SUM(cc.estado = 'cumplido') AS compromisos_cumplidos
+            FROM comites c
+            LEFT JOIN empresas e             ON e.id = c.empresa_id
+            LEFT JOIN comite_compromisos cc  ON cc.comite_id = c.id
+            WHERE c.empresa_id = ?
+            GROUP BY c.id
+            ORDER BY c.fecha DESC
+        ");
+        $stmt->execute([$empresa_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function obtener(int $id): array|false {
         $stmt = $this->db->prepare("
             SELECT c.*, e.razon_social AS empresa_nombre
@@ -203,6 +220,27 @@ class ComitesModelo {
             ORDER BY cc.fecha_limite IS NULL ASC, cc.fecha_limite ASC, cc.id DESC
         ");
         $stmt->execute([':responsable' => $nombreResponsable, ':empresa_id' => $empresa_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Compromisos donde el usuario de operaciones/admin logueado figura como
+     * responsable, sin restringir por empresa (a diferencia de misCompromisos(),
+     * pensada para un usuario de empresa atado a un solo empresa_id).
+     * Usada solo para lectura (notificaciones) — no para autorizar ediciones.
+     */
+    public function misCompromisosGlobal(string $nombreResponsable): array {
+        $stmt = $this->db->prepare("
+            SELECT cc.*,
+                   c.titulo AS comite_titulo, c.fecha AS comite_fecha, c.empresa_id,
+                   e.razon_social AS empresa_nombre
+            FROM comite_compromisos cc
+            JOIN comites c ON c.id = cc.comite_id
+            LEFT JOIN empresas e ON e.id = c.empresa_id
+            WHERE cc.responsable = :responsable
+            ORDER BY cc.fecha_limite IS NULL ASC, cc.fecha_limite ASC, cc.id DESC
+        ");
+        $stmt->execute([':responsable' => $nombreResponsable]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

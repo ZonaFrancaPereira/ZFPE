@@ -1,14 +1,14 @@
 <?php
 
 require_once __DIR__ . '/../modelo/EmpresasModelo.php';
+require_once __DIR__ . '/ControladorBase.php';
 
-class EmpresasControlador {
+class EmpresasControlador extends ControladorBase {
 
     private EmpresasModelo $modelo;
-    private PDO $db;
 
     public function __construct(PDO $db) {
-        $this->db     = $db;
+        parent::__construct($db);
         $this->modelo = new EmpresasModelo($db);
     }
 
@@ -117,6 +117,7 @@ class EmpresasControlador {
     }
 
     public function eliminar(?int $id): void {
+        $this->exigirPost('index.php?modulo=empresas');
         if (!$id) { header('Location: index.php?modulo=empresas'); exit; }
         $this->modelo->eliminar($id);
         $_SESSION['flash_success'] = 'Empresa eliminada correctamente.';
@@ -198,6 +199,7 @@ class EmpresasControlador {
     }
 
     public function eliminarUsuario(?int $usuario_id): void {
+        $this->exigirPost('index.php?modulo=empresas&accion=usuarios');
         if ($usuario_id) {
             require_once __DIR__ . '/../modelo/UsuariosModelo.php';
             $usuariosModelo = new UsuariosModelo($this->db);

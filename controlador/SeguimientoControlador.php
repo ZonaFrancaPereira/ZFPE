@@ -1,12 +1,8 @@
 <?php
 
-class SeguimientoControlador {
+require_once __DIR__ . '/ControladorBase.php';
 
-    private PDO $db;
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
+class SeguimientoControlador extends ControladorBase {
 
     public function index(?int $empresa_id): void {
         if (!$empresa_id) { header('Location: index.php?modulo=empresas'); exit; }

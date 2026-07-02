@@ -102,6 +102,16 @@ class UsuariosModelo {
         ]);
     }
 
+    public function actualizarPerfil(int $id, string $nombre, string $correo): bool {
+        $stmt = $this->db->prepare("UPDATE usuarios SET nombre = ?, correo = ? WHERE id = ?");
+        return $stmt->execute([$nombre, $correo, $id]);
+    }
+
+    public function actualizarContrasena(int $id, string $nuevaContrasena): bool {
+        $stmt = $this->db->prepare("UPDATE usuarios SET contrasena = ? WHERE id = ?");
+        return $stmt->execute([password_hash($nuevaContrasena, PASSWORD_DEFAULT), $id]);
+    }
+
     public function correoExiste(string $correo, ?int $excluirId = null): bool {
         if ($excluirId) {
             $stmt = $this->db->prepare("SELECT COUNT(*) FROM usuarios WHERE correo=? AND id != ?");

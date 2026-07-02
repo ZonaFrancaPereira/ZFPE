@@ -6,16 +6,6 @@ $pageStyles = ['vista/assets/css/componentes.css'];
 ?>
 <?php require_once __DIR__ . '/../../parciales/cabecera.php'; ?>
 
-<?php if (!empty($_SESSION['flash_success'])): ?>
-<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
-  <div class="toast align-items-center text-bg-success border-0 show" role="alert">
-    <div class="d-flex">
-      <div class="toast-body"><i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-<?php unset($_SESSION['flash_success']); endif; ?>
 
 <div class="app-wrapper">
   <?php require_once __DIR__ . '/../../parciales/navegacion.php'; ?>
@@ -124,7 +114,9 @@ $pageStyles = ['vista/assets/css/componentes.css'];
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <a id="btnConfirmar" href="#" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Eliminar</a>
+        <form method="POST" id="formEliminar" class="m-0">
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Eliminar</button>
+        </form>
       </div>
     </div>
   </div>
@@ -134,7 +126,7 @@ $pageStyles = ['vista/assets/css/componentes.css'];
 document.getElementById('modalEliminar').addEventListener('show.bs.modal', function(e) {
   const btn = e.relatedTarget;
   document.getElementById('nombreUsuario').textContent = btn.dataset.nombre;
-  document.getElementById('btnConfirmar').href =
+  document.getElementById('formEliminar').action =
     'index.php?modulo=empresas&accion=eliminar-usuario&id=' + btn.dataset.id;
 });
 </script>

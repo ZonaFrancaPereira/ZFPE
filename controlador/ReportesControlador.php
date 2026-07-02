@@ -1,18 +1,10 @@
 <?php
 
-class ReportesControlador {
+require_once __DIR__ . '/ControladorBase.php';
 
-    private PDO $db;
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
+class ReportesControlador extends ControladorBase {
 
     public function index(?int $id = null): void {
-        $rol           = $_SESSION['usuario_rol'] ?? '';
-        $esOperaciones = $rol === 'operaciones';
-        $esAdmin       = $rol === 'admin';
-
         $empresa            = null;
         $etapas             = [];
         $resumenEstados     = [];
@@ -25,7 +17,7 @@ class ReportesControlador {
         require_once __DIR__ . '/../modelo/EmpresasModelo.php';
         $modeloEmpresas = new EmpresasModelo($this->db);
 
-        if ($esOperaciones || $esAdmin) {
+        if ($this->esOp()) {
             if ($id) {
                 $empresa = $modeloEmpresas->obtenerPorId($id);
                 if ($empresa) {
@@ -36,7 +28,7 @@ class ReportesControlador {
                 $todasEmpresas = $modeloEmpresas->obtenerTodas();
             }
         } else {
-            $empresa_id = (int) ($_SESSION['usuario_empresa_id'] ?? 0);
+            $empresa_id = $this->empresaId();
             if ($empresa_id) {
                 $empresa = $modeloEmpresas->obtenerPorId($empresa_id);
                 $this->cargarDatos($empresa_id, $etapas, $resumenEstados, $vencidos, $porVencer, $totalDocs, $indicadoresReporte);

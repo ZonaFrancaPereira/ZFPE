@@ -1,20 +1,29 @@
 <?php
 
-class ComitesControlador {
+require_once __DIR__ . '/ControladorBase.php';
 
-    private PDO $db;
+class ComitesControlador extends ControladorBase {
 
-    public function __construct(PDO $db) {
-        $this->db = $db;
+    /** Corta la ejecución si un usuario de empresa intenta una acción de escritura. */
+    private function exigirOperaciones(): void {
+        if (!$this->esOp()) {
+            header('Location: index.php?modulo=comites');
+            exit;
+        }
     }
 
     public function index(): void {
         require_once __DIR__ . '/../modelo/ComitesModelo.php';
-        $comites = (new ComitesModelo($this->db))->listar();
+        $modelo = new ComitesModelo($this->db);
+        $comites = $this->esOp()
+            ? $modelo->listar()
+            : ($this->empresaId() ? $modelo->listarPorEmpresa($this->empresaId()) : []);
         require_once __DIR__ . '/../vista/modulos/comites/index.php';
     }
 
     public function crear(): void {
+        $this->exigirOperaciones();
+
         require_once __DIR__ . '/../modelo/ComitesModelo.php';
         require_once __DIR__ . '/../modelo/EmpresasModelo.php';
         $modelo   = new ComitesModelo($this->db);
@@ -40,6 +49,13 @@ class ComitesControlador {
         $modelo      = new ComitesModelo($this->db);
         $comite      = $modelo->obtener($id);
         if (!$comite) { header('Location: index.php?modulo=comites'); exit; }
+
+        // Un usuario de empresa solo puede ver comités de su propia empresa
+        if (!$this->esOp() && (int) ($comite['empresa_id'] ?? 0) !== $this->empresaId()) {
+            header('Location: index.php?modulo=comites');
+            exit;
+        }
+
         $compromisos  = $modelo->compromisos($id);
         $responsables = $modelo->responsablesDisponibles($comite['empresa_id'] ?? null);
         $historialPorCompromiso = [];
@@ -50,6 +66,8 @@ class ComitesControlador {
     }
 
     public function editar(?int $id): void {
+        $this->exigirOperaciones();
+
         if (!$id) { header('Location: index.php?modulo=comites'); exit; }
         require_once __DIR__ . '/../modelo/ComitesModelo.php';
         require_once __DIR__ . '/../modelo/EmpresasModelo.php';
@@ -73,6 +91,9 @@ class ComitesControlador {
     }
 
     public function eliminar(?int $id): void {
+        $this->exigirOperaciones();
+        $this->exigirPost('index.php?modulo=comites');
+
         if ($id) {
             require_once __DIR__ . '/../modelo/ComitesModelo.php';
             (new ComitesModelo($this->db))->eliminar($id);
@@ -83,6 +104,8 @@ class ComitesControlador {
     }
 
     public function guardarCompromiso(): void {
+        $this->exigirOperaciones();
+
         $comite_id = (int) ($_POST['comite_id'] ?? 0);
         if ($comite_id && !empty(trim($_POST['descripcion'] ?? ''))) {
             require_once __DIR__ . '/../modelo/ComitesModelo.php';
@@ -94,6 +117,8 @@ class ComitesControlador {
     }
 
     public function actualizarCompromiso(?int $id): void {
+        $this->exigirOperaciones();
+
         $comite_id = (int) ($_POST['comite_id'] ?? 0);
         if ($id && !empty($_POST['estado'] ?? '')) {
             require_once __DIR__ . '/../modelo/ComitesModelo.php';
@@ -105,6 +130,9 @@ class ComitesControlador {
     }
 
     public function eliminarCompromiso(?int $id): void {
+        $this->exigirOperaciones();
+        $this->exigirPost('index.php?modulo=comites');
+
         if ($id) {
             require_once __DIR__ . '/../modelo/ComitesModelo.php';
             $comite_id = (new ComitesModelo($this->db))->eliminarCompromiso($id);

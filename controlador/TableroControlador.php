@@ -1,15 +1,11 @@
 <?php
 
-class TableroControlador {
+require_once __DIR__ . '/ControladorBase.php';
 
-    private PDO $db;
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
+class TableroControlador extends ControladorBase {
 
     public function index(): void {
-        $rol = $_SESSION['usuario_rol'] ?? '';
+        $rol = $this->rol();
 
         if ($rol === 'admin') {
             $totalEmpresas = (int) $this->db->query("SELECT COUNT(*) FROM empresas")->fetchColumn();
@@ -24,7 +20,7 @@ class TableroControlador {
             require_once __DIR__ . '/../vista/tablero/operaciones.php';
 
         } else {
-            $empresa_id = $_SESSION['usuario_empresa_id'] ?? null;
+            $empresa_id = $this->empresaId() ?: null;
 
             if ($empresa_id) {
                 require_once __DIR__ . '/../modelo/EmpresasModelo.php';

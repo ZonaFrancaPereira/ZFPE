@@ -49,13 +49,6 @@ $periodoLabel = ['mensual' => 'Mensual', 'trimestral' => 'Trimestral', 'semestra
     <div class="app-content">
       <div class="container-fluid">
 
-        <?php if (!empty($_SESSION['flash_success'])): ?>
-          <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($_SESSION['flash_success']) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-          <?php unset($_SESSION['flash_success']); ?>
-        <?php endif; ?>
 
         <!-- Encabezado empresa -->
         <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
