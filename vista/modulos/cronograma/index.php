@@ -204,7 +204,7 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
                  style="background:linear-gradient(90deg,#fff5f5,#fff);">
               <div class="d-flex align-items-center gap-2">
                 <?php if ($cFase['nombre']): ?>
-                  <span class="badge text-bg-danger py-1 px-2">
+                  <span class="badge text-white bg-success py-1 px-2">
                     <i class="bi bi-collection me-1"></i><?= htmlspecialchars($cFase['nombre']) ?>
                   </span>
                 <?php else: ?>
@@ -261,7 +261,7 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
 
             <?php if ($cFase['nombre']): ?>
             <div class="d-flex align-items-center gap-2 mb-3 mt-1 ms-4">
-              <span class="badge text-bg-danger fs-6 py-1 px-3">
+              <span class="badge text-white bg-info fs-6 py-1 px-3">
                 <i class="bi bi-collection me-1"></i><?= htmlspecialchars($cFase['nombre']) ?>
               </span>
             </div>
@@ -353,7 +353,7 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
                           $reqVencido = $req['fecha_vencimiento'] && $req['fecha_vencimiento'] < date('Y-m-d') && $req['estado_req'] !== 'cumplido';
                         ?>
                         <div class="col-md-6">
-                          <div class="requisito-mini-card requisito-mini-card--<?= $req['estado_req'] ?>">
+                          <div id="req-<?= $req['id'] ?>" class="requisito-mini-card requisito-mini-card--<?= $req['estado_req'] ?>">
                             <!-- Cabecera del requisito -->
                             <div class="d-flex align-items-start gap-2 p-2">
                               <i class="bi <?= $rIcon ?> text-<?= $rColor ?> mt-1 flex-shrink-0"></i>

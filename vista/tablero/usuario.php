@@ -49,6 +49,18 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
             </ol>
           </div>
         </div>
+        <?php if ($empresa): ?>
+        <div class="row">
+          <div class="col-12 text-sm-end">
+            <a href="index.php?modulo=informes&accion=excel" class="btn btn-outline-success btn-sm">
+              <i class="bi bi-file-earmark-excel me-1"></i>Descargar Excel
+            </a>
+            <a href="index.php?modulo=informes&accion=pdf" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-file-earmark-pdf me-1"></i>Descargar PDF
+            </a>
+          </div>
+        </div>
+        <?php endif; ?>
       </div>
     </div>
 

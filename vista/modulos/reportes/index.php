@@ -14,6 +14,16 @@ $esAdmin       = ($_SESSION['usuario_rol'] ?? '') === 'admin';
 
 $colorEstado = ['pendiente' => 'secondary', 'en_progreso' => 'primary', 'completa' => 'success'];
 
+// Helpers para enlazar etapas/requisitos al módulo correspondiente según el rol
+$urlEtapa = function (int $etapaId) use ($esOperaciones, $esAdmin, $empresa): string {
+    $modulo = ($esOperaciones || $esAdmin) ? 'seguimiento' : 'cronograma';
+    return "index.php?modulo=$modulo&id={$empresa['id']}#etapa-$etapaId";
+};
+$urlRequisito = function (int $reqId) use ($esOperaciones, $esAdmin, $empresa): string {
+    $modulo = ($esOperaciones || $esAdmin) ? 'seguimiento' : 'cronograma';
+    return "index.php?modulo=$modulo&id={$empresa['id']}#req-$reqId";
+};
+
 // Agrupar etapas por fase
 $repFaseGrupos = [];
 foreach ($etapas as $et) {
@@ -191,9 +201,19 @@ if ($empresa) {
                   </div>
                 </div>
                 <div class="col-md-2 text-md-end no-print">
-                  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-printer me-1"></i> Imprimir
-                  </button>
+                  <div class="d-flex gap-1 justify-content-md-end flex-wrap">
+                    <a href="index.php?modulo=informes&accion=excel&id=<?= $empresa['id'] ?>"
+                       class="btn btn-outline-success btn-sm" title="Descargar informe en Excel">
+                      <i class="bi bi-file-earmark-excel"></i>
+                    </a>
+                    <a href="index.php?modulo=informes&accion=pdf&id=<?= $empresa['id'] ?>"
+                       class="btn btn-outline-danger btn-sm" title="Descargar informe en PDF">
+                      <i class="bi bi-file-earmark-pdf"></i>
+                    </a>
+                    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+                      <i class="bi bi-printer me-1"></i> Imprimir
+                    </button>
+                  </div>
                 </div>
                 <div class="col-12 text-muted small print-only" style="display:none;">
                   Generado el <?= date('d/m/Y H:i') ?>
@@ -269,7 +289,7 @@ if ($empresa) {
                         <?php $ec = $colorEstado[$etapa['estado_progreso']] ?? 'secondary'; ?>
                         <tr>
                           <td class="fw-semibold small <?= $rFase['nombre'] ? 'ps-4' : '' ?>">
-                            <?= htmlspecialchars($etapa['nombre']) ?>
+                            <a href="<?= htmlspecialchars($urlEtapa((int) $etapa['id'])) ?>"><?= htmlspecialchars($etapa['nombre']) ?></a>
                           </td>
                           <td class="text-center small text-muted">
                             <?= (int)$etapa['req_cumplidos'] + (int)$etapa['req_no_aplica'] ?>/<?= (int)$etapa['total_req'] ?>
@@ -317,7 +337,9 @@ if ($empresa) {
                       <li class="list-group-item px-3 py-2">
                         <div class="d-flex align-items-center justify-content-between gap-2">
                           <div>
-                            <div class="small fw-semibold"><?= htmlspecialchars($v['requisito']) ?></div>
+                            <div class="small fw-semibold">
+                              <a href="<?= htmlspecialchars($urlRequisito((int) $v['requisito_id'])) ?>"><?= htmlspecialchars($v['requisito']) ?></a>
+                            </div>
                             <small class="text-muted"><?= htmlspecialchars($v['etapa']) ?></small>
                           </div>
                           <div class="text-end flex-shrink-0">
@@ -341,7 +363,9 @@ if ($empresa) {
                       <li class="list-group-item px-3 py-2">
                         <div class="d-flex align-items-center justify-content-between gap-2">
                           <div>
-                            <div class="small fw-semibold"><?= htmlspecialchars($pv['requisito']) ?></div>
+                            <div class="small fw-semibold">
+                              <a href="<?= htmlspecialchars($urlRequisito((int) $pv['requisito_id'])) ?>"><?= htmlspecialchars($pv['requisito']) ?></a>
+                            </div>
                             <small class="text-muted"><?= htmlspecialchars($pv['etapa']) ?></small>
                           </div>
                           <div class="text-end flex-shrink-0">
@@ -425,6 +449,10 @@ if ($empresa) {
                   <a href="index.php?modulo=documentos" class="btn btn-outline-primary btn-sm mt-2 no-print">
                     <i class="bi bi-folder2-open me-1"></i>Ver documentos
                   </a>
+                  <?php else: ?>
+                  <a href="index.php?modulo=documentos&accion=ver&id=<?= $empresa['id'] ?>" class="btn btn-outline-primary btn-sm mt-2 no-print">
+                    <i class="bi bi-folder2-open me-1"></i>Ver documentos
+                  </a>
                   <?php endif; ?>
                 </div>
               </div>
@@ -453,7 +481,9 @@ if ($empresa) {
                     </li>
                   <?php endif; ?>
                   <li class="list-group-item px-3 py-2 <?= !empty($et['fase_nombre']) ? 'ps-4' : '' ?>">
-                    <div class="small fw-semibold mb-1"><?= htmlspecialchars($et['nombre']) ?></div>
+                    <div class="small fw-semibold mb-1">
+                      <a href="<?= htmlspecialchars($urlEtapa((int) $et['id'])) ?>"><?= htmlspecialchars($et['nombre']) ?></a>
+                    </div>
                     <div class="d-flex flex-wrap gap-3 text-muted" style="font-size:.75rem;">
                       <?php if ($et['fecha_inicio']): ?>
                         <span><i class="bi bi-play-circle text-primary me-1"></i><?= date('d/m/Y', strtotime($et['fecha_inicio'])) ?></span>
@@ -476,8 +506,9 @@ if ($empresa) {
           <div class="mt-2">
             <div class="card shadow-sm">
               <div class="card-header">
-                <h6 class="card-title mb-0">
-                  <i class="bi bi-graph-up me-2" style="color:var(--zf-teal,#1993b8);"></i>Indicadores de seguimiento
+                <h6 class="card-title mb-0 d-flex align-items-center justify-content-between">
+                  <span><i class="bi bi-graph-up me-2" style="color:var(--zf-teal,#1993b8);"></i>Indicadores de seguimiento</span>
+                  <a href="index.php?modulo=indicadores&id=<?= $empresa['id'] ?>" class="small no-print">Ver histórico completo →</a>
                 </h6>
               </div>
               <div class="card-body">
