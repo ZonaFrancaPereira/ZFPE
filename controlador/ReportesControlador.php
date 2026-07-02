@@ -110,7 +110,7 @@ class ReportesControlador {
 
         // Requisitos vencidos
         $stmt = $this->db->prepare("
-            SELECT r.nombre AS requisito, et.nombre AS etapa,
+            SELECT r.id AS requisito_id, r.nombre AS requisito, et.nombre AS etapa,
                    ere.fecha_vencimiento,
                    DATEDIFF(CURDATE(), ere.fecha_vencimiento) AS dias_vencido
             FROM empresa_requisito_estado ere
@@ -126,7 +126,7 @@ class ReportesControlador {
 
         // Requisitos por vencer (próximos 30 días)
         $stmt = $this->db->prepare("
-            SELECT r.nombre AS requisito, et.nombre AS etapa,
+            SELECT r.id AS requisito_id, r.nombre AS requisito, et.nombre AS etapa,
                    ere.fecha_vencimiento,
                    DATEDIFF(ere.fecha_vencimiento, CURDATE()) AS dias_restantes
             FROM empresa_requisito_estado ere

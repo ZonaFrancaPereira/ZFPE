@@ -129,6 +129,16 @@ usort($faseGrupos, fn($a, $b) => $a['orden'] <=> $b['orden']);
                    class="btn btn-outline-warning btn-sm">
                   <i class="bi bi-folder2-open me-1"></i> Documentos
                 </a>
+                <div class="d-flex gap-1">
+                  <a href="index.php?modulo=informes&accion=excel&id=<?= $empresa['id'] ?>"
+                     class="btn btn-outline-success btn-sm" title="Descargar informe en Excel">
+                    <i class="bi bi-file-earmark-excel"></i>
+                  </a>
+                  <a href="index.php?modulo=informes&accion=pdf&id=<?= $empresa['id'] ?>"
+                     class="btn btn-outline-danger btn-sm" title="Descargar informe en PDF">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                  </a>
+                </div>
                 <a href="index.php?modulo=empresas&accion=editar&id=<?= $empresa['id'] ?>"
                    class="btn btn-outline-secondary btn-sm">
                   <i class="bi bi-pencil me-1"></i> Editar
@@ -156,7 +166,7 @@ usort($faseGrupos, fn($a, $b) => $a['orden'] <=> $b['orden']);
 
                   <?php if ($grupo['nombre']): ?>
                   <div class="d-flex align-items-center gap-2 mb-2 mt-3">
-                    <span class="badge text-bg-danger" style="font-size:.75rem;letter-spacing:.03em;">
+                    <span class="badge bg-info text-white" style="font-size:.75rem;letter-spacing:.03em;">
                       <i class="bi bi-collection me-1"></i><?= htmlspecialchars($grupo['nombre']) ?>
                     </span>
                     <hr class="flex-grow-1 my-0">
@@ -186,7 +196,7 @@ usort($faseGrupos, fn($a, $b) => $a['orden'] <=> $b['orden']);
                           <i class="bi bi-dot text-muted"></i>
                           <?= htmlspecialchars($req['nombre']) ?>
                           <?php if ($req['entidad_nombre']): ?>
-                            <span class="badge text-bg-light border text-muted ms-1" style="font-size:.65rem;"><?= htmlspecialchars($req['entidad_nombre']) ?></span>
+                            <span class="badge text-bg-primary border text-white ms-1" style="font-size:.65rem;"><?= htmlspecialchars($req['entidad_nombre']) ?></span>
                           <?php endif; ?>
                         </div>
                         <div class="d-flex align-items-center gap-2">

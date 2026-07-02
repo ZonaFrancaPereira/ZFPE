@@ -36,7 +36,7 @@ $esOperaciones = $rol === 'operaciones';
 // Módulos por rol
 $modulosAdmin       = ['usuarios'];
 $modulosOperaciones = ['empresas', 'configuracion', 'comites', 'seguimiento', 'indicadores'];
-$modulosUsuario     = ['cronograma', 'entidades', 'documentos', 'reportes', 'mis-compromisos', 'indicadores'];
+$modulosUsuario     = ['cronograma', 'entidades', 'documentos', 'reportes', 'mis-compromisos', 'indicadores', 'informes'];
 $modulosValidos     = array_merge($modulosAdmin, $modulosOperaciones, $modulosUsuario, ['manual']);
 
 $db = conectar();
@@ -61,7 +61,7 @@ if (in_array($modulo, $modulosOperaciones, true) && !$esAdmin && !$esOperaciones
     exit;
 }
 
-if (in_array($modulo, $modulosUsuario, true) && $esOperaciones && !in_array($modulo, ['cronograma', 'reportes', 'documentos', 'mis-compromisos', 'indicadores'])) {
+if (in_array($modulo, $modulosUsuario, true) && $esOperaciones && !in_array($modulo, ['cronograma', 'reportes', 'documentos', 'mis-compromisos', 'indicadores', 'informes'])) {
     $_SESSION['flash_error'] = 'No tienes permiso para acceder a esa sección.';
     header('Location: index.php');
     exit;
@@ -152,6 +152,15 @@ match ($modulo) {
     'reportes' => (function () use ($id, $db) {
         require_once __DIR__ . '/controlador/ReportesControlador.php';
         (new ReportesControlador($db))->index($id);
+    })(),
+
+    'informes' => (function () use ($accion, $id, $db) {
+        require_once __DIR__ . '/controlador/InformesControlador.php';
+        $ctrl = new InformesControlador($db);
+        match ($accion) {
+            'pdf'   => $ctrl->pdf($id),
+            default => $ctrl->excel($id),
+        };
     })(),
 
     'documentos' => (function () use ($accion, $id, $db) {
