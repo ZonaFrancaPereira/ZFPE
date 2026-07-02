@@ -5,7 +5,7 @@
 $pageTitle  = 'Inicio — ZFIP-E';
 $activePage = 'tablero';
 $pageStyles  = ['vista/assets/css/componentes.css', 'vista/assets/css/tablero.css', 'vista/assets/css/indicadores.css', 'vista/assets/css/cronograma.css'];
-$pageScripts = ['vista/assets/vendor/chartjs/chart.umd.min.js', 'vista/assets/js/indicadores.js'];
+$pageScripts = ['vista/assets/vendor/chartjs/chart.umd.min.js', 'vista/assets/js/indicadores.js', 'vista/assets/js/reportes-charts.js'];
 ?>
 <?php require_once __DIR__ . '/../parciales/cabecera.php'; ?>
 
@@ -40,27 +40,36 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
   <main class="app-main">
     <div class="app-content-header encabezado-zf">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-sm-6"><h3 class="mb-0 titulo-zf">Tablero</h3></div>
+        <div class="row align-items-center">
           <div class="col-sm-6">
-            <ol class="breadcrumb breadcrumb-zf float-sm-end">
+            <h3 class="mb-0 titulo-zf">Centro de Control Gerencial</h3>
+            <?php if ($empresa): ?>
+              <div class="d-inline-flex align-items-center gap-2 mt-2 px-3 py-1 rounded-pill"
+                   style="background:linear-gradient(90deg, var(--zf-navy,#22404b), var(--zf-teal,#1993b8));">
+                <i class="bi bi-building text-white"></i>
+                <span class="text-white fw-semibold" style="font-size:1.05rem;letter-spacing:.02em;">
+                  <?= htmlspecialchars($empresa['razon_social']) ?>
+                </span>
+              </div>
+            <?php endif; ?>
+          </div>
+          <div class="col-sm-6 d-flex flex-column align-items-sm-end gap-2">
+            <ol class="breadcrumb breadcrumb-zf mb-0">
               <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
               <li class="breadcrumb-item active">Tablero</li>
             </ol>
+            <?php if ($empresa): ?>
+            <div class="d-flex gap-2">
+              <a href="index.php?modulo=informes&accion=excel" class="btn btn-zf-gradient btn-sm rounded-pill px-3">
+                <i class="bi bi-file-earmark-excel me-1"></i>Descargar Excel
+              </a>
+              <a href="index.php?modulo=informes&accion=pdf" class="btn btn-zf-gradient btn-sm rounded-pill px-3">
+                <i class="bi bi-file-earmark-pdf me-1"></i>Descargar PDF
+              </a>
+            </div>
+            <?php endif; ?>
           </div>
         </div>
-        <?php if ($empresa): ?>
-        <div class="row">
-          <div class="col-12 text-sm-end">
-            <a href="index.php?modulo=informes&accion=excel" class="btn btn-outline-success btn-sm">
-              <i class="bi bi-file-earmark-excel me-1"></i>Descargar Excel
-            </a>
-            <a href="index.php?modulo=informes&accion=pdf" class="btn btn-outline-danger btn-sm">
-              <i class="bi bi-file-earmark-pdf me-1"></i>Descargar PDF
-            </a>
-          </div>
-        </div>
-        <?php endif; ?>
       </div>
     </div>
 
@@ -364,7 +373,52 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
               </div>
             </div>
 
-            <!-- Indicadores: aprovecha el resto del espacio sobrante -->
+          </div>
+          <?php endif; ?>
+
+          <?php
+            // --- Datos tomados de Reportes: distribución de requisitos y avance por fase ---
+            $distribucionReq = ['cumplido' => 0, 'en_progreso' => 0, 'pendiente' => 0, 'no_aplica' => 0];
+            foreach ($empresa['requisitos'] as $r) {
+                $distribucionReq[$r['estado_req']] = ($distribucionReq[$r['estado_req']] ?? 0) + 1;
+            }
+            $totalReqDash = array_sum($distribucionReq);
+
+            $acortarNombreFaseDash = function (string $nombre): string {
+                $partes = explode(' - ', $nombre);
+                return ucwords(mb_strtolower(trim(end($partes))));
+            };
+            $faseAvgGrupos = [];
+            foreach ($etapasCronograma as $et) {
+                $fid = $et['fase_id'] ?? 0;
+                $faseAvgGrupos[$fid]['nombre']   ??= $et['fase_nombre'] ?? 'Sin fase';
+                $faseAvgGrupos[$fid]['orden']    ??= $et['fase_orden']  ?? 999;
+                $faseAvgGrupos[$fid]['avances'][] = (float) $et['avance'];
+            }
+            usort($faseAvgGrupos, fn($a, $b) => $a['orden'] <=> $b['orden']);
+            $chartFasesLabelsDash = [];
+            $chartFasesDataDash   = [];
+            foreach ($faseAvgGrupos as $fg) {
+                $chartFasesLabelsDash[] = $acortarNombreFaseDash($fg['nombre']);
+                $chartFasesDataDash[]   = count($fg['avances']) > 0 ? round(array_sum($fg['avances']) / count($fg['avances']), 1) : 0;
+            }
+
+            // Fechas clave: etapas con fecha de inicio o de finalización registrada
+            $etapasConFechaDash = array_filter($etapasCronograma, fn($e) => $e['fecha_inicio'] || $e['fecha_completado']);
+          ?>
+
+          <!-- Indicadores -->
+          <?php if (!empty($indicadoresResumen) || !empty($requisitosVencidos) || !empty($requisitosPorVencer) || $totalReqDash > 0 || !empty($etapasConFechaDash)): ?>
+          <div class="d-flex align-items-center justify-content-between py-2 px-3 rounded-2 mb-3"
+               style="background:linear-gradient(90deg, var(--zf-navy,#22404b), var(--zf-teal,#1993b8));">
+            <span class="badge py-1 px-2" style="background:rgba(255,255,255,.15);color:#fff;">
+              <i class="bi bi-graph-up me-1"></i>INDICADORES
+            </span>
+            <a href="index.php?modulo=indicadores" class="small text-decoration-none text-white fw-semibold">
+              Ver todos <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+          <div class="row g-3 mb-4">
             <?php foreach ($indicadoresResumen as $ind):
               $labels = $ind['periodos_json'] ? explode(',', $ind['periodos_json']) : [];
               $vals   = $ind['valores_json']  ? array_map('floatval', explode(',', $ind['valores_json'])) : [];
@@ -373,7 +427,7 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
               $pct    = ($meta && $meta > 0 && $ultimo !== null) ? min(round($ultimo / $meta * 100, 1), 100) : null;
               $col    = ($pct === null) ? 'secondary' : ($pct >= 100 ? 'success' : ($pct >= 50 ? 'primary' : 'warning'));
             ?>
-            <div class="col-sm-6 col-xl-4">
+            <div class="col-md-6 col-lg-4">
               <div class="card shadow-sm h-100 indicador-card">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-start mb-2">
@@ -416,32 +470,100 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
             </div>
             <?php endforeach; ?>
 
-          </div>
-          <?php endif; ?>
-
-          <div class="row g-4">
-
-            <!-- Avance por etapa -->
-            <div class="col-lg-7">
+            <div class="col-md-6 col-lg-4">
               <div class="card shadow-sm h-100 card-acento-teal">
                 <div class="card-header">
-                  <h5 class="card-title mb-0">
-                    <i class="bi bi-diagram-3 me-2 text-success"></i>Avance por etapa
-                  </h5>
+                  <h6 class="card-title mb-0"><i class="bi bi-pie-chart me-2 text-primary"></i>Distribución de requisitos</h6>
                 </div>
                 <div class="card-body">
+                  <?php if ($totalReqDash === 0): ?>
+                    <p class="text-muted text-center mb-0 small">Sin requisitos asignados.</p>
+                  <?php else: ?>
+                    <div class="mb-3" style="max-width:200px;margin-inline:auto;">
+                      <canvas id="chartDistribucion" width="200" height="200"></canvas>
+                    </div>
+                    <?php
+                    $itemsDash = [
+                        ['Cumplidos',   $distribucionReq['cumplido'],    'success',   'check-circle'],
+                        ['En progreso', $distribucionReq['en_progreso'], 'primary',   'arrow-repeat'],
+                        ['Pendientes',  $distribucionReq['pendiente'],   'secondary', 'hourglass'],
+                        ['No aplica',   $distribucionReq['no_aplica'],   'light',     'dash-circle'],
+                    ];
+                    foreach ($itemsDash as [$label, $count, $color, $icon]):
+                        if ($count === 0) continue;
+                        $pct = round($count / $totalReqDash * 100);
+                    ?>
+                    <div class="d-flex align-items-center justify-content-between py-1 small">
+                      <span class="d-flex align-items-center gap-1">
+                        <i class="bi bi-<?= $icon ?> text-<?= $color ?>"></i><?= $label ?>
+                      </span>
+                      <span class="fw-bold"><?= $count ?> <span class="text-muted fw-normal">(<?= $pct ?>%)</span></span>
+                    </div>
+                    <?php endforeach; ?>
+                  <?php endif; ?>
+                </div>
+              </div>
+            </div>
+
+            <?php if (count($chartFasesLabelsDash) > 0): ?>
+            <div class="col-md-6 col-lg-4">
+              <div class="card shadow-sm h-100 card-acento-teal">
+                <div class="card-header">
+                  <h6 class="card-title mb-0"><i class="bi bi-bar-chart-fill me-2 text-zf-teal"></i>Avance por fase</h6>
+                </div>
+                <div class="card-body">
+                  <canvas id="chartFases" height="180"></canvas>
+                </div>
+              </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($etapasConFechaDash)): ?>
+            <div class="col-md-6 col-lg-4">
+              <div class="card shadow-sm h-100 card-acento-teal">
+                <div class="card-header">
+                  <h6 class="card-title mb-0"><i class="bi bi-calendar-check me-2 text-zf-teal"></i>Fechas clave</h6>
+                </div>
+                <div class="card-body" style="max-height:260px;overflow-y:auto;">
+                  <?php $totalFechas = count($etapasConFechaDash); $i = 0; ?>
+                  <?php foreach ($etapasConFechaDash as $et): $i++; ?>
+                  <div class="d-flex align-items-center justify-content-between gap-2 py-2 <?= $i < $totalFechas ? 'border-bottom' : '' ?>">
+                    <div class="min-w-0">
+                      <div class="fw-semibold text-truncate" style="font-size:.72rem;"><?= htmlspecialchars($et['nombre']) ?></div>
+                      <?php if (!empty($et['fase_nombre'])): ?>
+                        <div class="text-muted text-truncate" style="font-size:.6rem;text-transform:uppercase;letter-spacing:.03em;">
+                          <?= htmlspecialchars($et['fase_nombre']) ?>
+                        </div>
+                      <?php endif; ?>
+                    </div>
+                    <div class="d-flex flex-column align-items-end flex-shrink-0" style="font-size:.65rem;">
+                      <?php if ($et['fecha_inicio']): ?>
+                        <span class="text-primary"><i class="bi bi-play-circle me-1"></i><?= date('d/m/Y', strtotime($et['fecha_inicio'])) ?></span>
+                      <?php endif; ?>
+                      <?php if ($et['fecha_completado']): ?>
+                        <span class="text-success"><i class="bi bi-check-circle me-1"></i><?= date('d/m/Y', strtotime($et['fecha_completado'])) ?></span>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            </div>
+            <?php endif; ?>
+
+            <div class="col-md-6 col-lg-4">
+              <div class="card shadow-sm h-100 card-acento-teal">
+                <div class="card-header">
+                  <h6 class="card-title mb-0"><i class="bi bi-diagram-3 me-2 text-success"></i>Avance por etapa</h6>
+                </div>
+                <div class="card-body" style="max-height:260px;overflow-y:auto;">
                   <?php foreach ($empresa['etapas'] as $etapa): ?>
                   <div class="mb-3">
                     <div class="d-flex align-items-center justify-content-between mb-1">
-                      <div class="d-flex align-items-center gap-2">
-                        <span class="small fw-semibold"><?= htmlspecialchars($etapa['nombre']) ?></span>
-                        <span class="badge text-bg-<?= $estadoColor[$etapa['estado_progreso']] ?? 'secondary' ?>" style="font-size:.65rem;">
-                          <?= $estadoLabel[$etapa['estado_progreso']] ?? $etapa['estado_progreso'] ?>
-                        </span>
-                      </div>
-                      <small class="fw-semibold text-muted"><?= number_format($etapa['avance'], 1) ?>%</small>
+                      <span class="text-truncate" style="font-size:.72rem;font-weight:600;"><?= htmlspecialchars($etapa['nombre']) ?></span>
+                      <small class="fw-semibold text-muted flex-shrink-0 ms-1"><?= number_format($etapa['avance'], 1) ?>%</small>
                     </div>
-                    <div class="progress" style="height:8px;">
+                    <div class="progress" style="height:6px;">
                       <div class="progress-bar <?= $etapa['avance'] >= 100 ? 'bg-success' : ($etapa['avance'] > 0 ? 'bg-primary' : 'bg-secondary') ?> bg-opacity-<?= $etapa['avance'] > 0 ? '100' : '25' ?>"
                            style="width:<?= max($etapa['avance'], $etapa['avance'] > 0 ? 3 : 0) ?>%"></div>
                     </div>
@@ -450,9 +572,155 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Alertas de vencimiento -->
+          <?php if (!empty($requisitosVencidos) || !empty($requisitosPorVencer)): ?>
+          <div class="card shadow-sm mb-4 card-acento-teal">
+            <div class="card-header">
+              <h6 class="card-title mb-0"><i class="bi bi-bell me-2 text-danger"></i>Alertas de vencimiento</h6>
+            </div>
+            <div class="card-body p-0">
+              <?php if (!empty($requisitosVencidos)): ?>
+                <div class="px-3 pt-2 pb-1">
+                  <p class="small fw-semibold text-danger mb-2">
+                    <i class="bi bi-exclamation-circle me-1"></i>Vencidos (<?= count($requisitosVencidos) ?>)
+                  </p>
+                </div>
+                <ul class="list-group list-group-flush">
+                  <?php foreach ($requisitosVencidos as $v): ?>
+                  <li class="list-group-item px-3 py-2">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                      <div>
+                        <div class="small fw-semibold"><?= htmlspecialchars($v['requisito']) ?></div>
+                        <small class="text-muted"><?= htmlspecialchars($v['etapa']) ?></small>
+                      </div>
+                      <div class="text-end flex-shrink-0">
+                        <span class="badge bg-danger"><?= date('d/m/Y', strtotime($v['fecha_vencimiento'])) ?></span>
+                        <div class="text-danger small"><?= $v['dias_vencido'] ?> días vencido</div>
+                      </div>
+                    </div>
+                  </li>
+                  <?php endforeach; ?>
+                </ul>
+              <?php endif; ?>
+
+              <?php if (!empty($requisitosPorVencer)): ?>
+                <div class="px-3 pt-2 pb-1 <?= !empty($requisitosVencidos) ? 'border-top' : '' ?>">
+                  <p class="small fw-semibold text-warning mb-2">
+                    <i class="bi bi-clock me-1"></i>Próximos a vencer — 30 días (<?= count($requisitosPorVencer) ?>)
+                  </p>
+                </div>
+                <ul class="list-group list-group-flush">
+                  <?php foreach ($requisitosPorVencer as $pv): ?>
+                  <li class="list-group-item px-3 py-2">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                      <div>
+                        <div class="small fw-semibold"><?= htmlspecialchars($pv['requisito']) ?></div>
+                        <small class="text-muted"><?= htmlspecialchars($pv['etapa']) ?></small>
+                      </div>
+                      <div class="text-end flex-shrink-0">
+                        <span class="badge bg-warning text-dark"><?= date('d/m/Y', strtotime($pv['fecha_vencimiento'])) ?></span>
+                        <div class="text-muted small"><?= $pv['dias_restantes'] ?> días restantes</div>
+                      </div>
+                    </div>
+                  </li>
+                  <?php endforeach; ?>
+                </ul>
+              <?php endif; ?>
+            </div>
+          </div>
+          <?php endif; ?>
+
+          <?php endif; ?>
+
+          <!-- Compromisos -->
+          <?php if (!empty($misCompromisos)): ?>
+          <div class="d-flex align-items-center justify-content-between py-2 px-3 rounded-2 mb-3"
+               style="background:linear-gradient(90deg, var(--zf-navy,#22404b), var(--zf-teal,#1993b8));">
+            <span class="badge py-1 px-2" style="background:rgba(255,255,255,.15);color:#fff;">
+              <i class="bi bi-clipboard-check me-1"></i>COMPROMISOS
+            </span>
+            <a href="index.php?modulo=mis-compromisos" class="small text-decoration-none text-white fw-semibold">
+              Ver todos <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+          <div class="row g-3 mb-4">
+            <?php
+              $estadoCompDash = [
+                  'pendiente'   => ['secondary', 'bi-hourglass-split',   'Pendiente'],
+                  'en_progreso' => ['primary',   'bi-arrow-repeat',      'En progreso'],
+                  'cumplido'    => ['success',   'bi-check-circle-fill', 'Cumplido'],
+              ];
+            ?>
+            <?php foreach ($misCompromisos as $comp):
+              $compVencido = ($comp['estado'] !== 'cumplido' && !empty($comp['fecha_limite']) && $comp['fecha_limite'] < date('Y-m-d'));
+              [$ccolor, $cicon, $clabel] = $compVencido
+                  ? ['danger', 'bi-exclamation-circle-fill', 'Vencido']
+                  : ($estadoCompDash[$comp['estado']] ?? ['secondary', 'bi-circle', $comp['estado']]);
+            ?>
+            <div class="col-sm-6 col-xl-4">
+              <div class="card shadow-sm h-100 card-acento-teal">
+                <div class="card-body">
+                  <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                    <span class="small fw-semibold text-truncate" title="<?= htmlspecialchars($comp['comite_titulo']) ?>">
+                      <i class="bi bi-people-fill me-1 text-zf-teal"></i><?= htmlspecialchars($comp['comite_titulo']) ?>
+                    </span>
+                    <span class="badge bg-<?= $ccolor ?> flex-shrink-0" style="font-size:.62rem;">
+                      <i class="bi <?= $cicon ?> me-1"></i><?= $clabel ?>
+                    </span>
+                  </div>
+                  <p class="small text-muted mb-2" style="display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    <?= htmlspecialchars($comp['descripcion']) ?>
+                  </p>
+                  <?php if ($comp['fecha_limite']): ?>
+                    <small class="<?= $compVencido ? 'text-danger fw-semibold' : 'text-muted' ?>">
+                      <i class="bi bi-calendar-event me-1"></i><?= date('d/m/Y', strtotime($comp['fecha_limite'])) ?>
+                    </small>
+                  <?php endif; ?>
+
+                  <?php $historial = $historialPorCompromiso[$comp['id']] ?? []; ?>
+                  <?php if (!empty($historial)): ?>
+                    <div class="fw-semibold text-muted text-uppercase mt-3 mb-2" style="font-size:.65rem;letter-spacing:.04em;">
+                      <i class="bi bi-clock-history me-1 text-zf-teal"></i>Historial
+                    </div>
+                    <ul class="ch-timeline">
+                      <?php foreach (array_slice($historial, 0, 2) as $h):
+                        [$hcolor, $hicon] = $estadoCompDash[$h['estado']] ?? ['secondary', 'bi-circle', ''];
+                      ?>
+                        <li class="ch-timeline-item">
+                          <span class="ch-timeline-dot bg-<?= $hcolor ?>"><i class="bi <?= $hicon ?>"></i></span>
+                          <div class="ch-timeline-content">
+                            <div class="small">
+                              <span class="fw-semibold"><?= htmlspecialchars($h['usuario_nombre'] ?? 'Usuario') ?></span>
+                              <span class="text-muted"> · <?= date('d/m/Y', strtotime($h['created_at'])) ?></span>
+                            </div>
+                            <?php if (!empty($h['observaciones'])): ?>
+                              <div class="text-muted" style="font-size:.72rem;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                                <?= htmlspecialchars($h['observaciones']) ?>
+                              </div>
+                            <?php endif; ?>
+                          </div>
+                        </li>
+                      <?php endforeach; ?>
+                    </ul>
+                    <?php if (count($historial) > 2): ?>
+                      <a href="index.php?modulo=mis-compromisos#compromiso-<?= $comp['id'] ?>" class="small text-decoration-none text-zf-teal">
+                        Ver <?= count($historial) - 2 ?> actualizaciones más
+                      </a>
+                    <?php endif; ?>
+                  <?php endif; ?>
+                </div>
+              </div>
+            </div>
+            <?php endforeach; ?>
+          </div>
+          <?php endif; ?>
+
+          <div class="row g-4">
 
             <!-- Requisitos pendientes + Alertas -->
-            <div class="col-lg-5 d-flex flex-column gap-4">
+            <div class="col-lg-8 mx-auto d-flex flex-column gap-4">
 
               <!-- Alertas -->
               <?php if (!empty($alertas)): ?>
@@ -531,6 +799,22 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
       </div>
     </div>
   </main>
+
+  <?php if ($empresa && (!empty($distribucionReq) || !empty($chartFasesLabelsDash))): ?>
+  <script>
+    window.reportesChartData = {
+      distribucion: {
+        labels: ['Cumplidos', 'En progreso', 'Pendientes', 'No aplica'],
+        data:   [<?= $distribucionReq['cumplido'] ?>, <?= $distribucionReq['en_progreso'] ?>, <?= $distribucionReq['pendiente'] ?>, <?= $distribucionReq['no_aplica'] ?>],
+        colors: ['#28a745', '#0d6efd', '#6c757d', '#e9ecef'],
+      },
+      fases: {
+        labels: <?= json_encode($chartFasesLabelsDash, JSON_UNESCAPED_UNICODE) ?>,
+        data:   <?= json_encode($chartFasesDataDash) ?>,
+      },
+    };
+  </script>
+  <?php endif; ?>
 
   <?php require_once __DIR__ . '/../parciales/pie.php'; ?>
 

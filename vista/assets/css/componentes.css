@@ -22,6 +22,21 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, .1) !important;
 }
 
+/* --- Botón con degradado navy → teal, usado para acciones destacadas
+   (ej. descargas) que deben resaltar sobre el resto de la interfaz. --- */
+.btn-zf-gradient {
+  background: linear-gradient(90deg, var(--zf-navy, #22404b), var(--zf-teal, #1993b8));
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(25, 147, 184, .25);
+  transition: transform .15s ease, box-shadow .15s ease, color .15s ease;
+}
+.btn-zf-gradient:hover {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(25, 147, 184, .35);
+}
+
 /* --- Encabezado de página (título + breadcrumb) con identidad de marca.
    Uso: <div class="app-content-header encabezado-zf"> ... <h3 class="titulo-zf">
    ... <ol class="breadcrumb breadcrumb-zf"> --- */

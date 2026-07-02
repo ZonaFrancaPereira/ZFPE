@@ -77,6 +77,46 @@ class TableroControlador extends ControladorBase {
                 $stmtDocs->execute([$empresa_id]);
                 $documentosRecientes = $stmtDocs->fetchAll(PDO::FETCH_ASSOC);
 
+                // Alertas de vencimiento (igual que en Reportes)
+                $stmtVenc = $this->db->prepare("
+                    SELECT r.id AS requisito_id, r.nombre AS requisito, et.nombre AS etapa,
+                           ere.fecha_vencimiento,
+                           DATEDIFF(CURDATE(), ere.fecha_vencimiento) AS dias_vencido
+                    FROM empresa_requisito_estado ere
+                    JOIN requisitos r ON r.id = ere.requisito_id
+                    JOIN etapas et    ON et.id = r.etapa_id
+                    WHERE ere.empresa_id = ?
+                      AND ere.fecha_vencimiento < CURDATE()
+                      AND ere.estado NOT IN ('cumplido','no_aplica')
+                    ORDER BY ere.fecha_vencimiento ASC
+                ");
+                $stmtVenc->execute([$empresa_id]);
+                $requisitosVencidos = $stmtVenc->fetchAll(PDO::FETCH_ASSOC);
+
+                $stmtPorVenc = $this->db->prepare("
+                    SELECT r.id AS requisito_id, r.nombre AS requisito, et.nombre AS etapa,
+                           ere.fecha_vencimiento,
+                           DATEDIFF(ere.fecha_vencimiento, CURDATE()) AS dias_restantes
+                    FROM empresa_requisito_estado ere
+                    JOIN requisitos r ON r.id = ere.requisito_id
+                    JOIN etapas et    ON et.id = r.etapa_id
+                    WHERE ere.empresa_id = ?
+                      AND ere.fecha_vencimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                      AND ere.estado NOT IN ('cumplido','no_aplica')
+                    ORDER BY ere.fecha_vencimiento ASC
+                ");
+                $stmtPorVenc->execute([$empresa_id]);
+                $requisitosPorVencer = $stmtPorVenc->fetchAll(PDO::FETCH_ASSOC);
+
+                // Mis compromisos (comités), con su historial de actualizaciones
+                require_once __DIR__ . '/../modelo/ComitesModelo.php';
+                $comitesModelo  = new ComitesModelo($this->db);
+                $misCompromisos = $comitesModelo->misCompromisos($this->nombreUsuario(), (int) $empresa_id);
+                $historialPorCompromiso = [];
+                foreach ($misCompromisos as $c) {
+                    $historialPorCompromiso[$c['id']] = $comitesModelo->historialCompromiso((int) $c['id']);
+                }
+
                 // Requisitos pendientes
                 $stmtPend = $this->db->prepare("
                     SELECT r.nombre, r.obligatorio, en.nombre AS entidad_nombre,
@@ -109,6 +149,10 @@ class TableroControlador extends ControladorBase {
                 $etapasCronograma = [];
                 $entidadesResumen = [];
                 $documentosRecientes = [];
+                $misCompromisos = [];
+                $historialPorCompromiso = [];
+                $requisitosVencidos = [];
+                $requisitosPorVencer = [];
             }
 
             require_once __DIR__ . '/../vista/tablero/usuario.php';
