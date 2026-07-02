@@ -1,7 +1,7 @@
 <?php
 /** @var array $item */
 /** @var array $requisitos */
-$pageTitle  = 'Editar ítem — ZFIP-E';
+$pageTitle  = 'Editar ítem — ZFPE';
 $activePage = 'configuracion';
 $pageStyles = ['vista/assets/css/componentes.css'];
 

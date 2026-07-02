@@ -1,5 +1,5 @@
 <?php
-$pageTitle  = 'Nuevo ítem — ZFIP-E';
+$pageTitle  = 'Nuevo ítem — ZFPE';
 $activePage = 'configuracion';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

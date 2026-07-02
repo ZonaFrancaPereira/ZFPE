@@ -1,7 +1,7 @@
 <?php
 /** @var array $usuario */
 /** @var array|null $empresa */
-$pageTitle   = 'Mi perfil — ZFIP-E';
+$pageTitle   = 'Mi perfil — ZFPE';
 $activePage  = 'perfil';
 $pageStyles  = ['vista/assets/css/componentes.css'];
 $pageScripts = ['vista/assets/js/perfil.js'];

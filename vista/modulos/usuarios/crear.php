@@ -1,5 +1,5 @@
 <?php
-$pageTitle   = 'Nuevo usuario — ZFIP-E';
+$pageTitle   = 'Nuevo usuario — ZFPE';
 $activePage  = 'usuarios';
 $pageStyles  = ['vista/assets/css/componentes.css', 'vista/assets/css/usuarios.css'];
 $pageScripts = ['vista/assets/js/usuarios-crear.js'];

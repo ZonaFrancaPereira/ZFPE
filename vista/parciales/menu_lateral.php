@@ -1,26 +1,36 @@
 <?php
 $esAdmin       = ($_SESSION['usuario_rol'] ?? '') === 'admin';
 $esOperaciones = ($_SESSION['usuario_rol'] ?? '') === 'operaciones';
+
+// En la barra lateral: el personal de operaciones/admin ve "ZFPE";
+// un usuario de empresa ve el nombre de su propia empresa.
+$marcaTexto = 'ZFPE';
+if (!$esAdmin && !$esOperaciones && !empty($_SESSION['usuario_empresa_id'])) {
+    $stmt = conectar()->prepare('SELECT razon_social FROM empresas WHERE id = ?');
+    $stmt->execute([(int) $_SESSION['usuario_empresa_id']]);
+    $nombreEmpresa = $stmt->fetchColumn();
+    if ($nombreEmpresa) {
+        $marcaTexto = $nombreEmpresa;
+    }
+}
 ?>
 
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <div class="sidebar-brand">
-    <a href="index.php" class="brand-link">
-      <span class="brand-image-zf rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0">
-        <i class="bi bi-shield-check"></i>
+    <a href="index.php" class="brand-link" title="<?= htmlspecialchars($marcaTexto) ?>">
+      <img src="vista/img/logo.png" alt="Logo" class="brand-image-zf flex-shrink-0">
+      <span class="brand-text fw-light text-truncate d-inline-block" style="max-width:150px; vertical-align:middle;">
+        <?= htmlspecialchars($marcaTexto) ?>
       </span>
-      <span class="brand-text fw-light">ZFIP-E</span>
     </a>
   </div>
 
   <style>
     .brand-image-zf {
-      width: 1.75rem;
-      height: 1.75rem;
+      height: 2rem;
+      width: auto;
       margin-right: .5rem;
-      background: var(--zf-teal, #1993b8);
-      color: #fff;
-      font-size: .95rem;
+      object-fit: contain;
     }
   </style>
 

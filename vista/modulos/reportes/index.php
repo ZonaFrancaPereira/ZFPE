@@ -6,7 +6,7 @@
 /** @var array      $porVencer */
 /** @var int        $totalDocs */
 /** @var array      $todasEmpresas */
-$pageTitle     = 'Reporte — ZFIP-E';
+$pageTitle     = 'Reporte — ZFPE';
 $activePage    = 'reportes';
 $pageStyles    = ['vista/assets/css/componentes.css', 'vista/assets/css/indicadores.css'];
 $esOperaciones = ($_SESSION['usuario_rol'] ?? '') === 'operaciones';

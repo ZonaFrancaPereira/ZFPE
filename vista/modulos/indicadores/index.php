@@ -2,7 +2,7 @@
 /** @var array      $empresa */
 /** @var array      $asignados */
 /** @var array      $disponibles */
-$pageTitle   = 'Indicadores — ZFIP-E';
+$pageTitle   = 'Indicadores — ZFPE';
 $activePage  = 'indicadores';
 $pageStyles  = ['vista/assets/css/componentes.css', 'vista/assets/css/indicadores.css'];
 $pageScripts = [

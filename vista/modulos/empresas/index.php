@@ -1,5 +1,5 @@
 <?php
-$pageTitle  = 'Empresas — ZFIP-E';
+$pageTitle  = 'Empresas — ZFPE';
 $activePage = 'empresas';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>
@@ -54,7 +54,7 @@ $pageStyles = ['vista/assets/css/componentes.css'];
                       <th>Representante</th>
                       <th class="text-center">Usuarios</th>
                       <th>Etapa actual</th>
-                      
+
                       <th style="min-width:140px;">Avance general</th>
                       <th class="text-end">Acciones</th>
                     </tr>

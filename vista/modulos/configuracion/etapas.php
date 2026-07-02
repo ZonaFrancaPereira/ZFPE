@@ -1,5 +1,5 @@
 <?php
-$pageTitle  = 'Etapas — ZFIP-E';
+$pageTitle  = 'Etapas — ZFPE';
 $activePage = 'configuracion';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

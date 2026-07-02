@@ -2,7 +2,7 @@
 $rol        = $_SESSION['usuario_rol'] ?? '';
 $esAdmin    = $rol === 'admin';
 $esOp       = in_array($rol, ['admin', 'operaciones']);
-$pageTitle  = 'Manual de uso — ZFIP-E';
+$pageTitle  = 'Manual de uso — ZFPE';
 $activePage = 'manual';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>
@@ -37,7 +37,7 @@ $pageStyles = ['vista/assets/css/componentes.css'];
           <div class="card-body py-4 text-white">
             <div class="row align-items-center">
               <div class="col-md-8">
-                <h4 class="fw-bold mb-1"><i class="bi bi-building me-2"></i>ZFIP-E — Sistema de Gestión</h4>
+                <h4 class="fw-bold mb-1"><i class="bi bi-building me-2"></i>ZFPE — Sistema de Gestión</h4>
                 <p class="mb-2 opacity-75">Zona Franca Internacional de Pereira · Guía de uso del sistema</p>
                 <div class="d-flex flex-wrap gap-2">
                   <span class="badge bg-white text-primary"><i class="bi bi-shield-fill-check me-1"></i>Admin</span>
@@ -796,7 +796,7 @@ $pageStyles = ['vista/assets/css/componentes.css'];
 
         <!-- Footer del manual -->
         <div class="text-center text-muted small py-3">
-          <i class="bi bi-building me-1"></i>ZFIP-E · Zona Franca Internacional de Pereira ·
+          <i class="bi bi-building me-1"></i>ZFPE · Zona Franca Internacional de Pereira ·
           <i class="bi bi-calendar3 me-1"></i><?= date('Y') ?>
         </div>
 

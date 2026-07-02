@@ -1,7 +1,7 @@
 <?php
 /** @var array|null $empresa */
 /** @var array      $entidades */
-$pageTitle  = 'Entidades — ZFIP-E';
+$pageTitle  = 'Entidades — ZFPE';
 $activePage = 'entidades';
 $pageStyles = ['vista/assets/css/componentes.css'];
 

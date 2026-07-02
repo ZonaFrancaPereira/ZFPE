@@ -1,6 +1,6 @@
 <?php
 /** @var array $fase */
-$pageTitle  = 'Editar fase — ZFIP-E';
+$pageTitle  = 'Editar fase — ZFPE';
 $activePage = 'configuracion';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

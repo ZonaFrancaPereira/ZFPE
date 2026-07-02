@@ -2,7 +2,7 @@
 /** @var array $empresa */
 /** @var array $usuariosDisponibles */
 /** @var array $etapasSinAsignar */
-$pageTitle  = htmlspecialchars($empresa['razon_social']) . ' — ZFIP-E';
+$pageTitle  = htmlspecialchars($empresa['razon_social']) . ' — ZFPE';
 $activePage = 'empresas';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

@@ -2,7 +2,7 @@
 /** @var array|null $empresa */
 /** @var array $alertas */
 /** @var array $requisitos_pendientes */
-$pageTitle  = 'Inicio — ZFIP-E';
+$pageTitle  = 'Inicio — ZFPE';
 $activePage = 'tablero';
 $pageStyles  = ['vista/assets/css/componentes.css', 'vista/assets/css/tablero.css', 'vista/assets/css/indicadores.css', 'vista/assets/css/cronograma.css'];
 $pageScripts = ['vista/assets/vendor/chartjs/chart.umd.min.js', 'vista/assets/js/indicadores.js'];

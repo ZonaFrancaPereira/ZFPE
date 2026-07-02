@@ -1,6 +1,6 @@
 <?php
 /** @var array $entidad */
-$pageTitle  = 'Editar entidad — ZFIP-E';
+$pageTitle  = 'Editar entidad — ZFPE';
 $activePage = 'configuracion';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

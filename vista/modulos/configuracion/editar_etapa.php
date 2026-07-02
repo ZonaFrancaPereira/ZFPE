@@ -1,7 +1,7 @@
 <?php
 /** @var array $etapa */
 /** @var array $fases */
-$pageTitle  = 'Editar etapa — ZFIP-E';
+$pageTitle  = 'Editar etapa — ZFPE';
 $activePage = 'configuracion';
 $pageStyles = ['vista/assets/css/componentes.css'];
 ?>

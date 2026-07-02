@@ -1,7 +1,7 @@
 <?php
 /** @var array $comite */
 /** @var array $empresas */
-$pageTitle  = 'Editar comité — ZFIP-E';
+$pageTitle  = 'Editar comité — ZFPE';
 $activePage = 'comites';
 $pageStyles = ['vista/assets/css/componentes.css'];
 

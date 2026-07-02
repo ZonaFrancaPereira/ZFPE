@@ -1,5 +1,5 @@
 <?php
-$pageTitle  = 'Tablero — ZFIP-E';
+$pageTitle  = 'Tablero — ZFPE';
 $activePage = 'tablero';
 $pageStyles = ['vista/assets/css/componentes.css', 'vista/assets/css/tablero.css'];
 ?>

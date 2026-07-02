@@ -1,6 +1,6 @@
 <?php
 /** @var array $usuario */
-$pageTitle   = 'Editar usuario — ZFIP-E';
+$pageTitle   = 'Editar usuario — ZFPE';
 $activePage  = 'usuarios';
 $pageStyles  = ['vista/assets/css/componentes.css', 'vista/assets/css/usuarios.css'];
 $pageScripts = ['vista/assets/js/usuarios-editar.js'];
