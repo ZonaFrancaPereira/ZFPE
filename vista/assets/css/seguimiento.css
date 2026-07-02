@@ -1,0 +1,77 @@
+.etapa-card {
+  border: 1px solid #e3e7e9;
+  border-left: 4px solid #adb5bd;
+  transition: box-shadow .15s ease;
+}
+.etapa-card:hover { box-shadow: 0 .25rem .75rem rgba(34, 64, 75, .1); }
+
+.etapa-card--pendiente   { border-left-color: #adb5bd; }
+.etapa-card--en_progreso { border-left-color: var(--zf-teal); }
+.etapa-card--completa    { border-left-color: #198754; }
+
+.etapa-header {
+  background-color: #ffffff;
+  cursor: pointer;
+}
+.etapa-header:hover { background-color: #f4f8f9; }
+
+.etapa-titulo,
+.etapa-icono { color: var(--zf-navy); }
+
+.etapa-resumen-card {
+  border-top: 3px solid #adb5bd;
+  background-color: #eef0f2;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.etapa-resumen-card:hover { box-shadow: 0 .25rem .75rem rgba(34, 64, 75, .12); transform: translateY(-1px); }
+
+.etapa-resumen-card--pendiente {
+  border-top-color: #adb5bd;
+  background-color: #eef0f2;
+}
+.etapa-resumen-card--en_progreso {
+  border-top-color: var(--zf-teal);
+  background-color: #e3f3f8;
+}
+.etapa-resumen-card--completa {
+  border-top-color: #198754;
+  background-color: #e3f6ea;
+}
+
+.etapa-chevron {
+  color: var(--zf-teal);
+  transition: transform .2s ease;
+}
+[data-bs-toggle="collapse"][aria-expanded="true"] .etapa-chevron { transform: rotate(180deg); }
+
+/* Tarjetas individuales de requisito dentro de una etapa */
+.requisito-card {
+  margin: .75rem;
+  border: 1px solid #e3e7e9;
+  border-left: 4px solid #adb5bd;
+  border-radius: .375rem;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+.requisito-card--alt { background-color: #f6f9fa; }
+
+.requisito-card--pendiente   { border-left-color: #adb5bd; }
+.requisito-card--en_progreso { border-left-color: var(--zf-teal); }
+.requisito-card--cumplido    { border-left-color: #198754; }
+.requisito-card--no_aplica   { border-left-color: #ced4da; }
+
+.requisito-header { border-bottom: 1px solid rgba(0, 0, 0, .06); }
+
+.requisito-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--zf-navy);
+  color: #ffffff;
+  font-size: .68rem;
+  font-weight: 600;
+}

@@ -1,0 +1,26 @@
+/* ── Módulo Indicadores ──────────────────────────────────── */
+
+.indicador-card {
+    border-top: 3px solid var(--zf-teal, #1993b8);
+    transition: box-shadow .15s;
+}
+.indicador-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .1) !important;
+}
+.indicador-card .card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, .06);
+}
+
+.indicador-stat-label {
+    font-size: .72rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: .15rem;
+}
+.indicador-stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
