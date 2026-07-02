@@ -183,6 +183,12 @@ $pageStyles = ['vista/assets/css/componentes.css'];
                     <div class="form-text">PDF, Word, Excel, JPG, PNG, ZIP · máx. 10 MB</div>
                   </div>
 
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Descripción</label>
+                    <input type="text" name="descripcion" class="form-control"
+                           placeholder="¿A qué corresponde este archivo? (opcional)" maxlength="255">
+                  </div>
+
                   <div id="previewImg" class="mb-3 d-none">
                     <img id="imgPreview" src="#" alt="Vista previa" class="img-fluid rounded border" style="max-height:160px;">
                   </div>
@@ -246,6 +252,11 @@ $pageStyles = ['vista/assets/css/componentes.css'];
                               <div class="small fw-semibold text-truncate" title="<?= htmlspecialchars($doc['nombre_original']) ?>">
                                 <?= htmlspecialchars($doc['nombre_original']) ?>
                               </div>
+                              <?php if (!empty($doc['descripcion'])): ?>
+                              <div class="text-muted fst-italic text-truncate" style="font-size:.72rem;" title="<?= htmlspecialchars($doc['descripcion']) ?>">
+                                <?= htmlspecialchars($doc['descripcion']) ?>
+                              </div>
+                              <?php endif; ?>
                               <div class="text-muted" style="font-size:.72rem;">
                                 <?= $kb ?> KB
                                 <?php if ($fecha): ?> · <?= $fecha ?><?php endif; ?>

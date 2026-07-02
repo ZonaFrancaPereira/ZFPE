@@ -4,6 +4,7 @@
 /** @var array $requisitosPorEtapa */
 /** @var array $itemsPorRequisito */
 /** @var array $documentosPorRequisito */
+/** @var array $historialPorRequisito */
 $pageTitle   = 'Seguimiento — ' . htmlspecialchars($empresa['razon_social']) . ' — ZFIP-E';
 $activePage  = 'empresas';
 $pageStyles  = ['vista/assets/css/componentes.css', 'vista/assets/css/seguimiento.css'];
@@ -185,6 +186,7 @@ $avanceTotal = count($etapas) > 0
               <?php
                 $itemsDeReq = $itemsPorRequisito[$req['id']] ?? [];
                 $bloqueado  = $req['estado_req'] === 'cumplido';
+                $histReq    = $historialPorRequisito[$req['id']] ?? [];
               ?>
 
               <div id="req-<?= $req['id'] ?>"
@@ -203,6 +205,12 @@ $avanceTotal = count($etapas) > 0
                     <?php endif; ?>
                   </div>
                   <div class="d-flex align-items-center gap-2">
+                    <?php if (!empty($histReq)): ?>
+                    <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2"
+                            data-bs-toggle="collapse" data-bs-target="#historial-<?= $req['id'] ?>">
+                      <i class="bi bi-clock-history me-1"></i>Historial (<?= count($histReq) ?>)
+                    </button>
+                    <?php endif; ?>
                     <span class="badge text-bg-<?= $estadoBadge[$req['estado_req']] ?? 'secondary' ?>">
                       <?= ucfirst(str_replace('_', ' ', $req['estado_req'])) ?>
                     </span>
@@ -217,6 +225,47 @@ $avanceTotal = count($etapas) > 0
                     <?php endif; ?>
                   </div>
                 </div>
+
+                <!-- Historial de cambios -->
+                <?php if (!empty($histReq)): ?>
+                <div class="collapse" id="historial-<?= $req['id'] ?>">
+                  <div class="px-3 pt-2 pb-1 border-bottom">
+                    <div class="border rounded p-2 bg-body-tertiary">
+                      <div class="fw-semibold small text-muted text-uppercase mb-2" style="letter-spacing:.04em;">
+                        <i class="bi bi-clock-history me-1"></i>Historial de cambios
+                      </div>
+                      <ul class="list-unstyled mb-0 small">
+                        <?php foreach ($histReq as $h): ?>
+                        <li class="d-flex gap-2 py-2 border-bottom border-opacity-25">
+                          <div class="text-muted flex-shrink-0" style="width:120px;">
+                            <?= date('d/m/Y H:i', strtotime($h['created_at'])) ?>
+                          </div>
+                          <div class="min-w-0">
+                            <span class="badge text-bg-<?= $estadoBadge[$h['estado_nuevo']] ?? 'secondary' ?>">
+                              <?= ucfirst(str_replace('_', ' ', $h['estado_nuevo'])) ?>
+                            </span>
+                            <?php if ($h['estado_anterior'] && $h['estado_anterior'] !== $h['estado_nuevo']): ?>
+                              <span class="text-muted">(antes: <?= ucfirst(str_replace('_', ' ', $h['estado_anterior'])) ?>)</span>
+                            <?php endif; ?>
+                            <?php if ($h['observaciones']): ?>
+                              <div class="mt-1"><?= nl2br(htmlspecialchars($h['observaciones'])) ?></div>
+                            <?php endif; ?>
+                            <?php if ($h['documento_nombre']): ?>
+                              <div class="text-primary mt-1">
+                                <i class="bi bi-paperclip me-1"></i><?= htmlspecialchars($h['documento_nombre']) ?>
+                              </div>
+                            <?php endif; ?>
+                            <div class="text-muted mt-1" style="font-size:.7rem;">
+                              <?= $h['registrado_por_nombre'] ? 'por ' . htmlspecialchars($h['registrado_por_nombre']) : '' ?>
+                            </div>
+                          </div>
+                        </li>
+                        <?php endforeach; ?>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <?php endif; ?>
 
                 <!-- Formulario del requisito -->
                 <?php
@@ -350,6 +399,11 @@ $avanceTotal = count($etapas) > 0
                                 <span class="small text-truncate" title="<?= htmlspecialchars($doc['nombre_original']) ?>">
                                   <?= htmlspecialchars($doc['nombre_original']) ?>
                                 </span>
+                                <?php if (!empty($doc['descripcion'])): ?>
+                                  <span class="text-muted fst-italic small text-truncate" title="<?= htmlspecialchars($doc['descripcion']) ?>">
+                                    — <?= htmlspecialchars($doc['descripcion']) ?>
+                                  </span>
+                                <?php endif; ?>
                                 <span class="text-muted" style="font-size:.7rem;">(<?= $kb2 ?> KB)</span>
                               </div>
                               <a href="index.php?modulo=documentos&accion=descargar&id=<?= $doc['id'] ?>"
@@ -370,6 +424,9 @@ $avanceTotal = count($etapas) > 0
                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"
                                    <?= $bloqueado ? 'disabled' : '' ?>>
                             <div class="form-text">PDF, Word, Excel, JPG, PNG, ZIP · máx. 10 MB</div>
+                            <input type="text" name="documento_descripcion" class="form-control form-control-sm mt-1"
+                                   placeholder="¿A qué corresponde este archivo? (opcional)" maxlength="255"
+                                   <?= $bloqueado ? 'disabled' : '' ?>>
                           </div>
 
                         </div>

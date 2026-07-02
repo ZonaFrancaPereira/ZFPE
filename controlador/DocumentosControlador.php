@@ -102,6 +102,8 @@ class DocumentosControlador {
         $dir = self::DIR_UPLOADS . $empresa_id . '/';
         if (!is_dir($dir)) mkdir($dir, 0755, true);
 
+        $descripcion = trim($_POST['descripcion'] ?? '');
+
         $nombreGuardado = uniqid($empresa_id . '_', true) . '.' . $ext;
         if (!move_uploaded_file($archivo['tmp_name'], $dir . $nombreGuardado)) {
             $_SESSION['flash_error'] = 'No se pudo guardar el archivo en el servidor.';
@@ -110,11 +112,11 @@ class DocumentosControlador {
         }
 
         $this->db->prepare("
-            INSERT INTO documentos (empresa_id, requisito_id, nombre_original, nombre_guardado, tipo_mime, tamano, subido_por)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO documentos (empresa_id, requisito_id, nombre_original, descripcion, nombre_guardado, tipo_mime, tamano, subido_por)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ")->execute([
             $empresa_id, $requisito_id,
-            $archivo['name'], $nombreGuardado,
+            $archivo['name'], $descripcion ?: null, $nombreGuardado,
             $mime, $archivo['size'],
             $_SESSION['usuario_id'] ?? null,
         ]);

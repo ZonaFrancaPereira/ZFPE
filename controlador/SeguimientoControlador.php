@@ -87,7 +87,7 @@ class SeguimientoControlador {
 
         // Documentos subidos por requisito para esta empresa
         $docsRaw = $this->db->prepare("
-            SELECT d.id, d.requisito_id, d.nombre_original, d.tamano, d.tipo_mime, d.created_at,
+            SELECT d.id, d.requisito_id, d.nombre_original, d.descripcion, d.tamano, d.tipo_mime, d.created_at,
                    u.nombre AS subido_por_nombre
             FROM documentos d
             LEFT JOIN usuarios u ON u.id = d.subido_por
@@ -98,6 +98,21 @@ class SeguimientoControlador {
         $documentosPorRequisito = [];
         foreach ($docsRaw->fetchAll(PDO::FETCH_ASSOC) as $doc) {
             $documentosPorRequisito[$doc['requisito_id']][] = $doc;
+        }
+
+        // Historial de cambios por requisito para esta empresa
+        $histRaw = $this->db->prepare("
+            SELECT h.*, u.nombre AS registrado_por_nombre, d.nombre_original AS documento_nombre
+            FROM empresa_requisito_historial h
+            LEFT JOIN usuarios u ON u.id = h.registrado_por
+            LEFT JOIN documentos d ON d.id = h.documento_id
+            WHERE h.empresa_id = ?
+            ORDER BY h.created_at DESC
+        ");
+        $histRaw->execute([$empresa_id]);
+        $historialPorRequisito = [];
+        foreach ($histRaw->fetchAll(PDO::FETCH_ASSOC) as $h) {
+            $historialPorRequisito[$h['requisito_id']][] = $h;
         }
 
         require_once __DIR__ . '/../vista/modulos/seguimiento/index.php';
@@ -123,6 +138,17 @@ class SeguimientoControlador {
         $observaciones   = trim($_POST['observaciones'] ?? '');
         $fecha_vencimiento = $_POST['fecha_vencimiento'] ?? null;
         $items_cumplidos = $_POST['items'] ?? [];
+        $documento_descripcion = trim($_POST['documento_descripcion'] ?? '');
+
+        // Estado/observaciones previos, para poder detectar cambios y registrar historial
+        $stmtPrevio = $this->db->prepare("
+            SELECT estado, observaciones FROM empresa_requisito_estado
+            WHERE empresa_id = ? AND requisito_id = ?
+        ");
+        $stmtPrevio->execute([$empresa_id, $requisito_id]);
+        $estadoPrevio = $stmtPrevio->fetch() ?: ['estado' => 'pendiente', 'observaciones' => ''];
+
+        $documento_id = null;
 
         // Subida de documento si viene archivo
         if (!empty($_FILES['documento_soporte']) && $_FILES['documento_soporte']['error'] === UPLOAD_ERR_OK) {
@@ -147,14 +173,15 @@ class SeguimientoControlador {
             $nombreGuardado = uniqid($empresa_id . '_', true) . '.' . $ext;
             if (move_uploaded_file($archivo['tmp_name'], $dir . $nombreGuardado)) {
                 $this->db->prepare("
-                    INSERT INTO documentos (empresa_id, requisito_id, nombre_original, nombre_guardado, tipo_mime, tamano, subido_por)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO documentos (empresa_id, requisito_id, nombre_original, descripcion, nombre_guardado, tipo_mime, tamano, subido_por)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ")->execute([
                     $empresa_id, $requisito_id,
-                    $archivo['name'], $nombreGuardado,
+                    $archivo['name'], $documento_descripcion ?: null, $nombreGuardado,
                     $mime, $archivo['size'],
                     $_SESSION['usuario_id'] ?? null,
                 ]);
+                $documento_id = (int) $this->db->lastInsertId();
             }
         }
 
@@ -198,7 +225,14 @@ class SeguimientoControlador {
         }
 
         // Recalcular estado del requisito automáticamente
-        $this->recalcularRequisito($empresa_id, $requisito_id, $estado, $observaciones, $fecha_vencimiento ?: null);
+        $estadoFinal = $this->recalcularRequisito($empresa_id, $requisito_id, $estado, $observaciones, $fecha_vencimiento ?: null);
+
+        // Registrar en el historial solo si hubo un cambio real (estado, observaciones o archivo nuevo)
+        $cambioEstado = $estadoFinal !== $estadoPrevio['estado'];
+        $cambioObs    = trim((string) $estadoPrevio['observaciones']) !== $observaciones;
+        if ($cambioEstado || $cambioObs || $documento_id) {
+            $this->registrarHistorial($empresa_id, $requisito_id, $estadoPrevio['estado'], $estadoFinal, $observaciones, $documento_id);
+        }
 
         // Recalcular progreso de la etapa
         $etapa = $this->db->prepare("SELECT etapa_id FROM requisitos WHERE id = ?");
@@ -211,11 +245,11 @@ class SeguimientoControlador {
         exit;
     }
 
-    private function recalcularRequisito(int $empresa_id, int $requisito_id, string $estado_manual, string $observaciones, ?string $fecha_vencimiento): void {
+    private function recalcularRequisito(int $empresa_id, int $requisito_id, string $estado_manual, string $observaciones, ?string $fecha_vencimiento): string {
         // Si el estado es no_aplica, respetar la decisión manual
         if ($estado_manual === 'no_aplica') {
             $this->upsertRequisito($empresa_id, $requisito_id, 'no_aplica', $observaciones, $fecha_vencimiento);
-            return;
+            return 'no_aplica';
         }
 
         // Verificar si todos los ítems obligatorios están cumplidos
@@ -254,6 +288,20 @@ class SeguimientoControlador {
         }
 
         $this->upsertRequisito($empresa_id, $requisito_id, $estado, $observaciones, $fecha_vencimiento);
+        return $estado;
+    }
+
+    private function registrarHistorial(int $empresa_id, int $requisito_id, ?string $estadoAnterior, string $estadoNuevo, string $observaciones, ?int $documento_id): void {
+        $fechaCumplimiento = $estadoNuevo === 'cumplido' ? date('Y-m-d H:i:s') : null;
+        $this->db->prepare("
+            INSERT INTO empresa_requisito_historial
+              (empresa_id, requisito_id, estado_anterior, estado_nuevo, observaciones, fecha_cumplimiento, documento_id, registrado_por)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ")->execute([
+            $empresa_id, $requisito_id, $estadoAnterior, $estadoNuevo,
+            $observaciones ?: null, $fechaCumplimiento, $documento_id,
+            $_SESSION['usuario_id'] ?? null,
+        ]);
     }
 
     private function upsertRequisito(int $empresa_id, int $requisito_id, string $estado, string $observaciones, ?string $fecha_vencimiento): void {
