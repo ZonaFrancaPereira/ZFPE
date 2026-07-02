@@ -1,0 +1,94 @@
+/* ==========================================================================
+   cronograma.css
+   Estilos exclusivos del módulo Cronograma (vista/modulos/cronograma/index.php).
+   Depende de las clases compartidas en componentes.css (meta-pill, file-chip).
+   ========================================================================== */
+
+/* --- Timeline vertical: la columna de etapas con el marcador numerado --- */
+.timeline-container {
+  position: relative;
+  padding-left: 20px;
+}
+.timeline-container::before {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 18px;
+  bottom: 18px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--bs-border-color), transparent);
+}
+.timeline-item { position: relative; }
+.timeline-marker {
+  position: absolute;
+  left: -20px;
+  top: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  box-shadow: 0 0 0 3px var(--bs-body-bg), 0 .2rem .4rem rgba(0,0,0,.12);
+}
+.timeline-active .timeline-marker {
+  box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), .25), 0 .3rem .6rem rgba(var(--bs-primary-rgb), .25);
+}
+.timeline-content { padding-left: 24px; }
+
+/* --- Tarjeta de fase (cabecera con degradado + stepper horizontal) --- */
+.fase-card {
+  border: none;
+  box-shadow: 0 .15rem .5rem rgba(0,0,0,.06);
+  transition: box-shadow .2s ease;
+}
+.fase-card:hover { box-shadow: 0 .35rem .9rem rgba(0,0,0,.1); }
+.fase-card .card-header {
+  background: linear-gradient(90deg, rgba(var(--bs-danger-rgb), .12), transparent);
+  border-bottom: 1px solid rgba(var(--bs-danger-rgb), .15);
+}
+
+/* Nodo del stepper: pequeño "lift" al pasar el mouse para invitar al clic */
+.stepper-node { transition: transform .15s ease; display: inline-block; }
+.stepper-node:hover { transform: translateY(-3px); }
+
+/* --- Tarjeta de etapa dentro de la timeline: acento de color a la
+   izquierda según su estado de avance, en vez de un borde plano gris. --- */
+.etapa-card {
+  border: none;
+  border-left: 4px solid var(--bs-secondary);
+  box-shadow: 0 .15rem .5rem rgba(0,0,0,.05);
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+.etapa-card:hover {
+  box-shadow: 0 .4rem 1rem rgba(0,0,0,.1);
+  transform: translateY(-1px);
+}
+.etapa-card--pendiente   { border-left-color: var(--bs-secondary); }
+.etapa-card--en_progreso { border-left-color: var(--bs-primary); background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), .04), transparent 60%); }
+.etapa-card--completa    { border-left-color: var(--bs-success); background: linear-gradient(135deg, rgba(var(--bs-success-rgb), .04), transparent 60%); }
+
+/* Botón que despliega/oculta los requisitos de una etapa */
+.collapse-toggle i { transition: transform .2s ease; display: inline-block; }
+.collapse-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
+
+/* --- Mini-tarjeta de requisito dentro de una etapa: acento de color por
+   estado del requisito (pendiente / en progreso / cumplido / no aplica). --- */
+.requisito-mini-card {
+  border-radius: .6rem;
+  border: 1px solid var(--bs-border-color-translucent, rgba(0,0,0,.06));
+  border-left: 3px solid var(--bs-secondary);
+  background: var(--bs-body-tertiary);
+  overflow: hidden;
+  height: 100%;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.requisito-mini-card:hover {
+  box-shadow: 0 .3rem .6rem rgba(0,0,0,.08);
+  transform: translateY(-1px);
+}
+.requisito-mini-card--pendiente   { border-left-color: var(--bs-secondary); }
+.requisito-mini-card--en_progreso { border-left-color: var(--bs-primary); }
+.requisito-mini-card--cumplido    { border-left-color: var(--bs-success); }
+.requisito-mini-card--no_aplica   { border-left-color: var(--bs-border-color); opacity: .75; }

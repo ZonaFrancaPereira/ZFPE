@@ -1,0 +1,147 @@
+/* ==========================================================================
+   componentes.css
+   Componentes visuales reutilizables entre módulos (Mis compromisos,
+   Cronograma, etc.). Mantener este archivo libre de estilos específicos
+   de una sola página — esos van en su propio archivo (ej. cronograma.css).
+   ========================================================================== */
+
+/* --- Colores corporativos ZFIP-E --- */
+:root {
+  --zf-navy: #22404b;
+  --zf-teal: #1993b8;
+}
+
+/* --- Encabezado de página (título + breadcrumb) con identidad de marca.
+   Uso: <div class="app-content-header encabezado-zf"> ... <h3 class="titulo-zf">
+   ... <ol class="breadcrumb breadcrumb-zf"> --- */
+.encabezado-zf {
+  background-color: #ffffff;
+  border-bottom: 3px solid var(--zf-teal);
+}
+
+.titulo-zf {
+  color: var(--zf-navy);
+  font-weight: 600;
+}
+.titulo-zf i { color: var(--zf-teal); }
+
+.breadcrumb-zf { --bs-breadcrumb-divider: '›'; }
+.breadcrumb-zf .breadcrumb-item a {
+  color: var(--zf-teal);
+  text-decoration: none;
+}
+.breadcrumb-zf .breadcrumb-item a:hover { text-decoration: underline; }
+.breadcrumb-zf .breadcrumb-item.active {
+  color: var(--zf-navy);
+  font-weight: 600;
+}
+
+/* --- Botones de acción con acento de marca (outline). --- */
+.btn-outline-zf {
+  color: var(--zf-navy);
+  border-color: var(--zf-navy);
+}
+.btn-outline-zf:hover {
+  color: #ffffff;
+  background-color: var(--zf-navy);
+  border-color: var(--zf-navy);
+}
+.btn-outline-zf-teal {
+  color: var(--zf-teal);
+  border-color: var(--zf-teal);
+}
+.btn-outline-zf-teal:hover {
+  color: #ffffff;
+  background-color: var(--zf-teal);
+  border-color: var(--zf-teal);
+}
+
+/* --- Meta-pill: etiqueta redondeada para datos secundarios (fechas, NIT,
+   entidad, etc.). Variantes de color con el sufijo --danger / --success. --- */
+.meta-pill {
+  display: inline-flex; align-items: center;
+  font-size: .75rem;
+  padding: .25rem .65rem;
+  border-radius: 999px;
+  background: var(--bs-tertiary-bg, rgba(0,0,0,.04));
+  color: var(--bs-secondary-color, #6c757d);
+  border: 1px solid var(--bs-border-color-translucent, rgba(0,0,0,.06));
+}
+.meta-pill--danger {
+  background: rgba(var(--bs-danger-rgb), .12);
+  border-color: rgba(var(--bs-danger-rgb), .25);
+  color: var(--bs-danger);
+  font-weight: 600;
+}
+.meta-pill--success {
+  background: rgba(var(--bs-success-rgb), .12);
+  border-color: rgba(var(--bs-success-rgb), .25);
+  color: var(--bs-success);
+  font-weight: 600;
+}
+
+/* --- Banner de aviso "bloqueado" (ej. compromiso ya cumplido). --- */
+.locked-banner {
+  display: flex; align-items: center; gap: .75rem;
+  background: linear-gradient(135deg, rgba(var(--bs-success-rgb), .14), rgba(var(--bs-success-rgb), .04));
+  border: 1px solid rgba(var(--bs-success-rgb), .3);
+  border-radius: .65rem;
+  padding: .75rem 1rem;
+  color: var(--bs-success);
+}
+.locked-banner > i { font-size: 1.6rem; flex-shrink: 0; }
+.locked-banner .fw-semibold { color: var(--bs-success); }
+
+/* --- File-chip: archivo adjunto descargable, estilo "pastilla". --- */
+.file-chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  max-width: 220px;
+  padding: .25rem .6rem;
+  border-radius: 999px;
+  background: var(--bs-tertiary-bg, rgba(0,0,0,.04));
+  border: 1px solid var(--bs-border-color-translucent, rgba(0,0,0,.08));
+  font-size: .72rem;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color .15s ease, box-shadow .15s ease;
+}
+.file-chip:hover {
+  background: rgba(var(--bs-primary-rgb), .1);
+  box-shadow: 0 .15rem .4rem rgba(0,0,0,.08);
+  color: inherit;
+}
+.file-chip span { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* --- Timeline vertical compacta, usada para historiales de actividad
+   (no confundir con la timeline grande del Cronograma, que vive en
+   cronograma.css por ser más específica de esa página). --- */
+.ch-timeline {
+  list-style: none;
+  margin: 0; padding: 0;
+  position: relative;
+}
+.ch-timeline::before {
+  content: '';
+  position: absolute;
+  left: 11px; top: 6px; bottom: 6px;
+  width: 2px;
+  background: var(--bs-border-color);
+}
+.ch-timeline-item {
+  position: relative;
+  display: flex;
+  gap: .65rem;
+  padding-bottom: .9rem;
+}
+.ch-timeline-item:last-child { padding-bottom: 0; }
+.ch-timeline-dot {
+  position: relative; z-index: 1;
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: .7rem;
+  box-shadow: 0 0 0 3px var(--bs-body-bg);
+}
+.ch-timeline-content { flex: 1; min-width: 0; }

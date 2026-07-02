@@ -1,0 +1,204 @@
+/* ── Login page ────────────────────────────────────────────── */
+body.login-page {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Contenedor del slideshow, fijo detrás de todo */
+.login-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.login-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(34, 64, 75, .65);
+  z-index: 1;
+}
+
+/* Slides */
+.login-bg-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  animation: bgFade 36s linear infinite;
+}
+.login-bg-slide:nth-child(1) { background-image: url('../../img/DJI_0650.jpg'); animation-delay:  0s; }
+.login-bg-slide:nth-child(2) { background-image: url('../../img/DJI_0685.jpg'); animation-delay:  6s; }
+.login-bg-slide:nth-child(3) { background-image: url('../../img/DJI_0638.jpg'); animation-delay: 12s; }
+.login-bg-slide:nth-child(4) { background-image: url('../../img/DJI_0634.jpg'); animation-delay: 18s; }
+.login-bg-slide:nth-child(5) { background-image: url('../../img/DJI_0622.jpg'); animation-delay: 24s; }
+.login-bg-slide:nth-child(6) { background-image: url('../../img/DJI_0643.jpg'); animation-delay: 30s; }
+
+@keyframes bgFade {
+  0%   { opacity: 0; }
+  5%   { opacity: 1; }
+  82%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Layout de dos paneles ── */
+.login-layout {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Panel izquierdo: texto institucional */
+.login-text-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem 3.5rem;
+  border-right: 1px solid rgba(255, 255, 255, .18);
+}
+
+.login-text-content { margin-top: auto; margin-bottom: auto; }
+
+.login-text-eyebrow {
+  display: inline-block;
+  color: rgba(255, 255, 255, .7);
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.login-text-nombre {
+  color: #ffffff;
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.12;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, .35);
+  margin: 0 0 .75rem;
+}
+
+.login-text-legal {
+  color: rgba(255, 255, 255, .65);
+  font-size: .82rem;
+  letter-spacing: .04em;
+  margin: 0 0 1.5rem;
+}
+
+.login-text-divider {
+  width: 48px;
+  height: 3px;
+  background: var(--zf-teal, #1993b8);
+  border-radius: 2px;
+  margin-bottom: 1.25rem;
+}
+
+.login-text-tagline {
+  color: rgba(255, 255, 255, .8);
+  font-size: 1rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.login-footer-left {
+  color: rgba(255, 255, 255, .4);
+  font-size: .7rem;
+  margin: 0;
+}
+
+/* Panel derecho: formulario */
+.login-form-panel {
+  width: 420px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 2.5rem;
+}
+
+/* Login box */
+.login-box {
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  margin-bottom: 1.25rem;
+}
+.login-logo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, .12);
+  border: 2px solid rgba(255, 255, 255, .45);
+  color: #ffffff;
+  font-size: 1.5rem;
+  backdrop-filter: blur(6px);
+}
+.login-logo-texto {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: .04em;
+}
+.login-logo-texto span { font-weight: 400; opacity: .8; }
+.login-logo-subtitulo {
+  color: rgba(255, 255, 255, .7);
+  font-size: .75rem;
+  letter-spacing: .05em;
+}
+
+/* Tarjeta del formulario */
+.login-card {
+  border: none;
+  border-top: 4px solid var(--zf-teal, #1993b8);
+  border-radius: .75rem;
+  overflow: hidden;
+}
+.login-box-msg { font-size: .88rem; }
+
+/* Inputs */
+.login-card-body .form-control:focus {
+  border-color: var(--zf-teal, #1993b8);
+  box-shadow: 0 0 0 .2rem rgba(25, 147, 184, .18);
+}
+.login-card-body .input-group:focus-within .input-group-text {
+  border-color: var(--zf-teal, #1993b8);
+  color: var(--zf-teal, #1993b8);
+}
+
+/* Botón */
+.btn-login-zf {
+  background-color: var(--zf-navy, #22404b);
+  border-color: var(--zf-navy, #22404b);
+  color: #ffffff;
+  padding-block: .6rem;
+  font-weight: 600;
+}
+.btn-login-zf:hover,
+.btn-login-zf:focus {
+  background-color: #1a3038;
+  border-color: #1a3038;
+  color: #ffffff;
+}
+
+/* Responsive: ocultar panel de texto en pantallas pequeñas */
+@media (max-width: 768px) {
+  .login-text-panel { display: none; }
+  .login-form-panel { width: 100%; padding: 2rem 1.5rem; }
+  .login-layout { justify-content: center; }
+}

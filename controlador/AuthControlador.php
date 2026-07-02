@@ -1,0 +1,38 @@
+<?php
+
+class AuthControlador {
+
+    public function login(): void {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $correo    = trim($_POST['correo'] ?? '');
+            $contrasena = $_POST['contrasena'] ?? '';
+
+            $db   = conectar();
+            $stmt = $db->prepare("SELECT * FROM usuarios WHERE correo = ? LIMIT 1");
+            $stmt->execute([$correo]);
+            $usuario = $stmt->fetch();
+
+            if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
+                session_regenerate_id(true);
+                $_SESSION['usuario_id']         = $usuario['id'];
+                $_SESSION['usuario_nombre']     = $usuario['nombre'];
+                $_SESSION['usuario_rol']        = $usuario['rol'];
+                $_SESSION['usuario_empresa_id'] = $usuario['empresa_id'] ?? null;
+                header('Location: index.php');
+                exit;
+            }
+
+            $_SESSION['error_login'] = 'Correo o contraseña incorrectos.';
+            header('Location: index.php?accion=login');
+            exit;
+        }
+
+        require_once __DIR__ . '/../vista/login.php';
+    }
+
+    public function logout(): void {
+        session_destroy();
+        header('Location: index.php?accion=login');
+        exit;
+    }
+}
