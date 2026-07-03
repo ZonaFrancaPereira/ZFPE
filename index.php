@@ -28,13 +28,23 @@ if (empty($_SESSION['usuario_id'])) {
     exit;
 }
 
+if ($accion === 'cambiar-contrasena') {
+    $auth->cambiarContrasenaObligatoria();
+    exit;
+}
+
+if (!empty($_SESSION['usuario_debe_cambiar_contrasena'])) {
+    header('Location: index.php?accion=cambiar-contrasena');
+    exit;
+}
+
 // --- Helpers de rol ---
 $rol           = $_SESSION['usuario_rol'] ?? '';
 $esAdmin       = $rol === 'admin';
 $esOperaciones = $rol === 'operaciones';
 
 // Módulos por rol
-$modulosAdmin       = ['usuarios'];
+$modulosAdmin       = ['usuarios', 'smtp'];
 $modulosOperaciones = ['empresas', 'configuracion', 'comites', 'seguimiento', 'indicadores'];
 $modulosUsuario     = ['cronograma', 'entidades', 'documentos', 'reportes', 'mis-compromisos', 'indicadores', 'informes'];
 $modulosValidos     = array_merge($modulosAdmin, $modulosOperaciones, $modulosUsuario, ['manual', 'perfil', 'notificaciones']);
@@ -188,7 +198,7 @@ match ($modulo) {
         };
     })(),
 
-    'manual' => (function () {
+    'manual' => (function () use ($accion) {
         require_once __DIR__ . '/vista/modulos/manual/index.php';
     })(),
 
@@ -217,6 +227,16 @@ match ($modulo) {
             'actualizar'          => $ctrl->actualizar($id),
             'descargar-documento' => $ctrl->descargarDocumento($id),
             default                => $ctrl->index(),
+        };
+    })(),
+
+    'smtp' => (function () use ($accion, $db) {
+        require_once __DIR__ . '/controlador/SmtpConfigControlador.php';
+        $ctrl = new SmtpConfigControlador($db);
+        match ($accion) {
+            'guardar' => $ctrl->guardar(),
+            'probar'  => $ctrl->probar(),
+            default   => $ctrl->index(),
         };
     })(),
 

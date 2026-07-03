@@ -173,45 +173,50 @@ if ($empresa) {
           <?php endif; ?>
 
           <!-- Encabezado del reporte -->
-          <div class="card shadow-sm mb-4 border-0 bg-body-secondary print-header">
+          <div class="card shadow-sm mb-4 border-0 print-header card-acento-teal">
             <div class="card-body py-3">
               <div class="row align-items-center g-3">
-                <div class="col-md-7">
+                <div class="col-md-6">
                   <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                         style="width:50px;height:50px;font-size:1.2rem;">
+                    <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                         style="width:52px;height:52px;font-size:1.2rem;background:linear-gradient(135deg, var(--zf-navy,#22404b), var(--zf-teal,#1993b8));">
                       <?= mb_strtoupper(mb_substr($empresa['razon_social'], 0, 1)) ?>
                     </div>
-                    <div>
-                      <h5 class="mb-0"><?= htmlspecialchars($empresa['razon_social']) ?></h5>
-                      <small class="text-muted">NIT: <?= htmlspecialchars($empresa['nit']) ?></small>
+                    <div class="min-w-0">
+                      <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-1"
+                           style="background:linear-gradient(90deg, var(--zf-navy,#22404b), var(--zf-teal,#1993b8));">
+                        <i class="bi bi-building text-white"></i>
+                        <span class="text-white fw-semibold text-truncate" style="font-size:1rem;letter-spacing:.02em;max-width:280px;">
+                          <?= htmlspecialchars($empresa['razon_social']) ?>
+                        </span>
+                      </div>
+                      <div class="text-muted small">NIT: <?= htmlspecialchars($empresa['nit']) ?></div>
                     </div>
                   </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                   <div class="text-center text-md-start">
-                    <div class="fs-3 fw-bold text-<?= $avanceGlobal >= 100 ? 'success' : ($avanceGlobal > 0 ? 'primary' : 'secondary') ?>">
+                    <div class="fs-3 fw-bold text-<?= $avanceGlobal >= 100 ? 'success' : 'zf-teal' ?>">
                       <?= $avanceGlobal ?>%
                     </div>
                     <div class="progress mb-1" style="height:8px;">
-                      <div class="progress-bar bg-<?= $avanceGlobal >= 100 ? 'success' : 'primary' ?>"
-                           style="width:<?= $avanceGlobal ?>%"></div>
+                      <div class="progress-bar" style="width:<?= $avanceGlobal ?>%;background-color:<?= $avanceGlobal >= 100 ? '#198754' : 'var(--zf-teal,#1993b8)' ?>;"></div>
                     </div>
                     <small class="text-muted">Avance general</small>
                   </div>
                 </div>
                 <div class="col-md-2 text-md-end no-print">
-                  <div class="d-flex gap-1 justify-content-md-end flex-wrap">
+                  <div class="d-flex flex-column gap-2 align-items-stretch align-items-md-end">
                     <a href="index.php?modulo=informes&accion=excel&id=<?= $empresa['id'] ?>"
-                       class="btn btn-outline-success btn-sm" title="Descargar informe en Excel">
-                      <i class="bi bi-file-earmark-excel"></i>
+                       class="btn btn-outline-zf-teal btn-sm">
+                      <i class="bi bi-file-earmark-excel me-1 text-success"></i>Excel
                     </a>
                     <a href="index.php?modulo=informes&accion=pdf&id=<?= $empresa['id'] ?>"
-                       class="btn btn-outline-danger btn-sm" title="Descargar informe en PDF">
-                      <i class="bi bi-file-earmark-pdf"></i>
+                       class="btn btn-outline-zf-teal btn-sm">
+                      <i class="bi bi-file-earmark-pdf me-1 text-danger"></i>PDF
                     </a>
-                    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
-                      <i class="bi bi-printer me-1"></i> Imprimir
+                    <button onclick="window.print()" class="btn btn-outline-zf-teal btn-sm">
+                      <i class="bi bi-printer me-1"></i>Imprimir
                     </button>
                   </div>
                 </div>
@@ -252,81 +257,200 @@ if ($empresa) {
             </div>
           </div>
 
-          <div class="row g-4">
-            <!-- Columna izquierda -->
-            <div class="col-lg-7">
+          <!-- Avance por etapa -->
+          <div class="card shadow-sm mb-4 card-acento-teal">
+            <div class="card-header">
+              <h6 class="card-title mb-0"><i class="bi bi-diagram-3 me-2 text-success"></i>Avance por etapa</h6>
+            </div>
+            <div class="card-body p-0">
+              <?php $estadoIconRep = ['pendiente' => 'bi-hourglass-split', 'en_progreso' => 'bi-arrow-repeat', 'completa' => 'bi-check-circle-fill']; ?>
+              <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Etapa</th>
+                      <th class="text-center">Requisitos</th>
+                      <th style="min-width:140px;">Avance</th>
+                      <th class="text-center">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach ($repFaseGrupos as $rFase): ?>
 
-              <!-- Avance por etapa -->
-              <div class="card shadow-sm mb-4">
+                    <?php if ($rFase['nombre']): ?>
+                    <tr>
+                      <td colspan="4" class="py-2 px-3"
+                          style="background:linear-gradient(90deg, var(--zf-navy,#22404b), var(--zf-teal,#1993b8));">
+                        <span class="badge py-1 px-2" style="background:rgba(255,255,255,.15);color:#fff;">
+                          <i class="bi bi-collection me-1"></i><?= htmlspecialchars($rFase['nombre']) ?>
+                        </span>
+                      </td>
+                    </tr>
+                    <?php endif; ?>
+
+                    <?php foreach ($rFase['etapas'] as $etapa): ?>
+                    <?php $ec = $colorEstado[$etapa['estado_progreso']] ?? 'secondary'; ?>
+                    <tr style="border-left:3px solid var(--bs-<?= $ec ?>);">
+                      <td class="fw-semibold small <?= $rFase['nombre'] ? 'ps-4' : '' ?>">
+                        <a class="text-decoration-none" href="<?= htmlspecialchars($urlEtapa((int) $etapa['id'])) ?>"><?= htmlspecialchars($etapa['nombre']) ?></a>
+                      </td>
+                      <td class="text-center small text-muted">
+                        <?= (int)$etapa['req_cumplidos'] + (int)$etapa['req_no_aplica'] ?>/<?= (int)$etapa['total_req'] ?>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="progress flex-grow-1" style="height:6px;">
+                            <div class="progress-bar bg-<?= $ec ?>" style="width:<?= (float)$etapa['avance'] ?>%"></div>
+                          </div>
+                          <small class="fw-semibold text-<?= $ec ?>" style="min-width:36px;">
+                            <?= (float)$etapa['avance'] ?>%
+                          </small>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-<?= $ec ?> small">
+                          <i class="bi <?= $estadoIconRep[$etapa['estado_progreso']] ?? 'bi-circle' ?> me-1"></i>
+                          <?= ['pendiente'=>'Pendiente','en_progreso'=>'En progreso','completa'=>'Completa'][$etapa['estado_progreso']] ?? $etapa['estado_progreso'] ?>
+                        </span>
+                      </td>
+                    </tr>
+                    <?php endforeach; ?>
+
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fila de resumen: distribución, avance por fase, documentación, fechas clave -->
+          <?php $etapasConFecha = array_filter($etapas, fn($e) => $e['fecha_inicio'] || $e['fecha_completado']); ?>
+          <div class="row g-3 mb-4">
+
+            <!-- Distribución de requisitos -->
+            <div class="col-md-6 col-lg-3">
+              <div class="card shadow-sm h-100 card-acento-teal">
                 <div class="card-header">
-                  <h6 class="card-title mb-0"><i class="bi bi-diagram-3 me-2 text-success"></i>Avance por etapa</h6>
+                  <h6 class="card-title mb-0"><i class="bi bi-pie-chart me-2 text-primary"></i>Distribución</h6>
                 </div>
-                <div class="card-body p-0">
-                  <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0">
-                      <thead class="table-light">
-                        <tr>
-                          <th>Etapa</th>
-                          <th class="text-center">Requisitos</th>
-                          <th style="min-width:140px;">Avance</th>
-                          <th class="text-center">Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <?php foreach ($repFaseGrupos as $rFase): ?>
-
-                        <?php if ($rFase['nombre']): ?>
-                        <tr style="background:#fef3f3;">
-                          <td colspan="4" class="py-1 px-3">
-                            <span class="badge text-bg-danger me-1">
-                              <i class="bi bi-collection me-1"></i><?= htmlspecialchars($rFase['nombre']) ?>
-                            </span>
-                          </td>
-                        </tr>
-                        <?php endif; ?>
-
-                        <?php foreach ($rFase['etapas'] as $etapa): ?>
-                        <?php $ec = $colorEstado[$etapa['estado_progreso']] ?? 'secondary'; ?>
-                        <tr>
-                          <td class="fw-semibold small <?= $rFase['nombre'] ? 'ps-4' : '' ?>">
-                            <a href="<?= htmlspecialchars($urlEtapa((int) $etapa['id'])) ?>"><?= htmlspecialchars($etapa['nombre']) ?></a>
-                          </td>
-                          <td class="text-center small text-muted">
-                            <?= (int)$etapa['req_cumplidos'] + (int)$etapa['req_no_aplica'] ?>/<?= (int)$etapa['total_req'] ?>
-                          </td>
-                          <td>
-                            <div class="d-flex align-items-center gap-2">
-                              <div class="progress flex-grow-1" style="height:6px;">
-                                <div class="progress-bar bg-<?= $ec ?>" style="width:<?= (float)$etapa['avance'] ?>%"></div>
-                              </div>
-                              <small class="fw-semibold text-<?= $ec ?>" style="min-width:36px;">
-                                <?= (float)$etapa['avance'] ?>%
-                              </small>
-                            </div>
-                          </td>
-                          <td class="text-center">
-                            <span class="badge bg-<?= $ec ?> small">
-                              <?= ['pendiente'=>'Pendiente','en_progreso'=>'En progreso','completa'=>'Completa'][$etapa['estado_progreso']] ?? $etapa['estado_progreso'] ?>
-                            </span>
-                          </td>
-                        </tr>
-                        <?php endforeach; ?>
-
-                        <?php endforeach; ?>
-                      </tbody>
-                    </table>
-                  </div>
+                <div class="card-body">
+                  <?php if ($totalReq === 0): ?>
+                    <p class="text-muted text-center mb-0 small">Sin requisitos asignados.</p>
+                  <?php else: ?>
+                    <div class="mb-3" style="max-width:160px;margin-inline:auto;">
+                      <canvas id="chartDistribucion" width="160" height="160"></canvas>
+                    </div>
+                    <?php
+                    $items = [
+                        ['Cumplidos',    $cumplidos,  'success',   'check-circle'],
+                        ['En progreso',  $enProgreso, 'primary',   'arrow-repeat'],
+                        ['Pendientes',   $pendientes, 'secondary', 'hourglass'],
+                        ['No aplica',    $noAplica,   'light',     'dash-circle'],
+                    ];
+                    foreach ($items as [$label, $count, $color, $icon]):
+                        if ($count === 0) continue;
+                        $pct = round($count / $totalReq * 100);
+                    ?>
+                    <div class="d-flex align-items-center justify-content-between py-1 small">
+                      <span class="d-flex align-items-center gap-1">
+                        <i class="bi bi-<?= $icon ?> text-<?= $color ?>"></i>
+                        <?= $label ?>
+                      </span>
+                      <span class="fw-bold"><?= $count ?> <span class="text-muted fw-normal">(<?= $pct ?>%)</span></span>
+                    </div>
+                    <?php endforeach; ?>
+                    <div class="border-top pt-2 mt-2 d-flex justify-content-between">
+                      <small class="text-muted">Total</small>
+                      <small class="fw-bold"><?= $totalReq ?></small>
+                    </div>
+                  <?php endif; ?>
                 </div>
               </div>
+            </div>
 
-              <!-- Alertas de vencimiento -->
-              <?php if (!empty($vencidos) || !empty($porVencer)): ?>
-              <div class="card shadow-sm mb-4">
+            <!-- Avance por fase -->
+            <?php if (count($chartFasesLabels) > 1 || (count($chartFasesLabels) === 1 && $chartFasesLabels[0] !== 'Sin fase')): ?>
+            <div class="col-md-6 col-lg-3">
+              <div class="card shadow-sm h-100 card-acento-teal">
                 <div class="card-header">
-                  <h6 class="card-title mb-0"><i class="bi bi-bell me-2 text-danger"></i>Alertas de vencimiento</h6>
+                  <h6 class="card-title mb-0"><i class="bi bi-bar-chart-fill me-2 text-danger"></i>Avance por fase</h6>
                 </div>
-                <div class="card-body p-0">
-                  <?php if (!empty($vencidos)): ?>
+                <div class="card-body">
+                  <canvas id="chartFases" height="180"></canvas>
+                </div>
+              </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Documentos -->
+            <div class="col-md-6 col-lg-3">
+              <div class="card shadow-sm h-100 card-acento-teal">
+                <div class="card-header">
+                  <h6 class="card-title mb-0"><i class="bi bi-folder2 me-2 text-warning"></i>Documentación</h6>
+                </div>
+                <div class="card-body text-center py-4">
+                  <div class="fs-2 fw-bold text-zf-teal"><?= $totalDocs ?></div>
+                  <div class="text-muted small"><?= $totalDocs === 1 ? 'documento subido' : 'documentos subidos' ?></div>
+                  <?php if (($_SESSION['usuario_rol'] ?? '') === 'usuario'): ?>
+                  <a href="index.php?modulo=documentos" class="btn btn-outline-zf-teal btn-sm mt-2 no-print">
+                    <i class="bi bi-folder2-open me-1"></i>Ver documentos
+                  </a>
+                  <?php else: ?>
+                  <a href="index.php?modulo=documentos&accion=ver&id=<?= $empresa['id'] ?>" class="btn btn-outline-zf-teal btn-sm mt-2 no-print">
+                    <i class="bi bi-folder2-open me-1"></i>Ver documentos
+                  </a>
+                  <?php endif; ?>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fechas clave -->
+            <?php if (!empty($etapasConFecha)): ?>
+            <div class="col-md-6 col-lg-3">
+              <div class="card shadow-sm h-100 card-acento-teal">
+                <div class="card-header">
+                  <h6 class="card-title mb-0"><i class="bi bi-calendar-check me-2 text-info"></i>Fechas clave</h6>
+                </div>
+                <div class="card-body" style="max-height:260px;overflow-y:auto;">
+                  <?php $totalFechasRep = count($etapasConFecha); $iRep = 0; ?>
+                  <?php foreach ($etapasConFecha as $et): $iRep++; ?>
+                  <div class="d-flex align-items-center justify-content-between gap-2 py-2 <?= $iRep < $totalFechasRep ? 'border-bottom' : '' ?>">
+                    <div class="min-w-0">
+                      <a class="text-truncate d-block" style="font-size:.72rem;font-weight:600;"
+                         href="<?= htmlspecialchars($urlEtapa((int) $et['id'])) ?>"><?= htmlspecialchars($et['nombre']) ?></a>
+                      <?php if (!empty($et['fase_nombre'])): ?>
+                        <div class="text-muted text-truncate" style="font-size:.6rem;text-transform:uppercase;letter-spacing:.03em;">
+                          <?= htmlspecialchars($et['fase_nombre']) ?>
+                        </div>
+                      <?php endif; ?>
+                    </div>
+                    <div class="d-flex flex-column align-items-end flex-shrink-0" style="font-size:.65rem;">
+                      <?php if ($et['fecha_inicio']): ?>
+                        <span class="text-primary"><i class="bi bi-play-circle me-1"></i><?= date('d/m/Y', strtotime($et['fecha_inicio'])) ?></span>
+                      <?php endif; ?>
+                      <?php if ($et['fecha_completado']): ?>
+                        <span class="text-success"><i class="bi bi-check-circle me-1"></i><?= date('d/m/Y', strtotime($et['fecha_completado'])) ?></span>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            </div>
+            <?php endif; ?>
+
+          </div>
+
+          <!-- Alertas de vencimiento -->
+          <?php if (!empty($vencidos) || !empty($porVencer)): ?>
+          <div class="card shadow-sm mb-4 card-acento-teal">
+            <div class="card-header">
+              <h6 class="card-title mb-0"><i class="bi bi-bell me-2 text-danger"></i>Alertas de vencimiento</h6>
+            </div>
+            <div class="card-body p-0">
+              <div class="row g-0">
+                <?php if (!empty($vencidos)): ?>
+                  <div class="col-md-6">
                     <div class="px-3 pt-2 pb-1">
                       <p class="small fw-semibold text-danger mb-2">
                         <i class="bi bi-exclamation-circle me-1"></i>Vencidos (<?= count($vencidos) ?>)
@@ -350,10 +474,12 @@ if ($empresa) {
                       </li>
                       <?php endforeach; ?>
                     </ul>
-                  <?php endif; ?>
+                  </div>
+                <?php endif; ?>
 
-                  <?php if (!empty($porVencer)): ?>
-                    <div class="px-3 pt-2 pb-1 <?= !empty($vencidos) ? 'border-top' : '' ?>">
+                <?php if (!empty($porVencer)): ?>
+                  <div class="col-md-6 <?= !empty($vencidos) ? 'border-start' : '' ?>">
+                    <div class="px-3 pt-2 pb-1">
                       <p class="small fw-semibold text-warning mb-2">
                         <i class="bi bi-clock me-1"></i>Próximos a vencer — 30 días (<?= count($porVencer) ?>)
                       </p>
@@ -376,200 +502,76 @@ if ($empresa) {
                       </li>
                       <?php endforeach; ?>
                     </ul>
-                  <?php endif; ?>
-                </div>
+                  </div>
+                <?php endif; ?>
               </div>
-              <?php endif; ?>
-
-            </div>
-
-            <!-- Columna derecha -->
-            <div class="col-lg-5">
-
-              <!-- Distribución de requisitos -->
-              <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                  <h6 class="card-title mb-0"><i class="bi bi-pie-chart me-2 text-primary"></i>Distribución de requisitos</h6>
-                </div>
-                <div class="card-body">
-                  <?php if ($totalReq === 0): ?>
-                    <p class="text-muted text-center mb-0 small">Sin requisitos asignados.</p>
-                  <?php else: ?>
-                    <div class="mb-3" style="max-width:220px;margin-inline:auto;">
-                      <canvas id="chartDistribucion" width="220" height="220"></canvas>
-                    </div>
-                    <?php
-                    $items = [
-                        ['Cumplidos',    $cumplidos,  'success',   'check-circle'],
-                        ['En progreso',  $enProgreso, 'primary',   'arrow-repeat'],
-                        ['Pendientes',   $pendientes, 'secondary', 'hourglass'],
-                        ['No aplica',    $noAplica,   'light',     'dash-circle'],
-                    ];
-                    foreach ($items as [$label, $count, $color, $icon]):
-                        if ($count === 0) continue;
-                        $pct = round($count / $totalReq * 100);
-                    ?>
-                    <div class="d-flex align-items-center justify-content-between py-1 small">
-                      <span class="d-flex align-items-center gap-1">
-                        <i class="bi bi-<?= $icon ?> text-<?= $color ?>"></i>
-                        <?= $label ?>
-                      </span>
-                      <span class="fw-bold"><?= $count ?> <span class="text-muted fw-normal">(<?= $pct ?>%)</span></span>
-                    </div>
-                    <?php endforeach; ?>
-                    <div class="border-top pt-2 mt-2 d-flex justify-content-between">
-                      <small class="text-muted">Total requisitos</small>
-                      <small class="fw-bold"><?= $totalReq ?></small>
-                    </div>
-                  <?php endif; ?>
-                </div>
-              </div>
-
-              <!-- Avance por fase -->
-              <?php if (count($chartFasesLabels) > 1 || (count($chartFasesLabels) === 1 && $chartFasesLabels[0] !== 'Sin fase')): ?>
-              <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                  <h6 class="card-title mb-0"><i class="bi bi-bar-chart-fill me-2 text-danger"></i>Avance por fase</h6>
-                </div>
-                <div class="card-body">
-                  <canvas id="chartFases" height="<?= max(120, count($chartFasesLabels) * 50) ?>"></canvas>
-                </div>
-              </div>
-              <?php endif; ?>
-
-              <!-- Documentos -->
-              <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                  <h6 class="card-title mb-0"><i class="bi bi-folder2 me-2 text-warning"></i>Documentación</h6>
-                </div>
-                <div class="card-body text-center py-4">
-                  <div class="fs-2 fw-bold text-primary"><?= $totalDocs ?></div>
-                  <div class="text-muted small"><?= $totalDocs === 1 ? 'documento subido' : 'documentos subidos' ?></div>
-                  <?php if (($_SESSION['usuario_rol'] ?? '') === 'usuario'): ?>
-                  <a href="index.php?modulo=documentos" class="btn btn-outline-primary btn-sm mt-2 no-print">
-                    <i class="bi bi-folder2-open me-1"></i>Ver documentos
-                  </a>
-                  <?php else: ?>
-                  <a href="index.php?modulo=documentos&accion=ver&id=<?= $empresa['id'] ?>" class="btn btn-outline-primary btn-sm mt-2 no-print">
-                    <i class="bi bi-folder2-open me-1"></i>Ver documentos
-                  </a>
-                  <?php endif; ?>
-                </div>
-              </div>
-
-              <!-- Fechas clave -->
-              <?php
-              $etapasConFecha = array_filter($etapas, fn($e) => $e['fecha_inicio'] || $e['fecha_completado']);
-              ?>
-              <?php if (!empty($etapasConFecha)): ?>
-              <div class="card shadow-sm">
-                <div class="card-header">
-                  <h6 class="card-title mb-0"><i class="bi bi-calendar-check me-2 text-info"></i>Fechas clave</h6>
-                </div>
-                <ul class="list-group list-group-flush">
-                  <?php
-                  $lastFaseId = -1;
-                  foreach ($etapasConFecha as $et):
-                      $etFaseId = $et['fase_id'] ?? 0;
-                  ?>
-                  <?php if ($etFaseId !== $lastFaseId && !empty($et['fase_nombre'])): ?>
-                    <?php $lastFaseId = $etFaseId; ?>
-                    <li class="list-group-item px-3 py-1" style="background:#fef3f3;">
-                      <span class="badge text-bg-danger" style="font-size:.7rem;">
-                        <i class="bi bi-collection me-1"></i><?= htmlspecialchars($et['fase_nombre']) ?>
-                      </span>
-                    </li>
-                  <?php endif; ?>
-                  <li class="list-group-item px-3 py-2 <?= !empty($et['fase_nombre']) ? 'ps-4' : '' ?>">
-                    <div class="small fw-semibold mb-1">
-                      <a href="<?= htmlspecialchars($urlEtapa((int) $et['id'])) ?>"><?= htmlspecialchars($et['nombre']) ?></a>
-                    </div>
-                    <div class="d-flex flex-wrap gap-3 text-muted" style="font-size:.75rem;">
-                      <?php if ($et['fecha_inicio']): ?>
-                        <span><i class="bi bi-play-circle text-primary me-1"></i><?= date('d/m/Y', strtotime($et['fecha_inicio'])) ?></span>
-                      <?php endif; ?>
-                      <?php if ($et['fecha_completado']): ?>
-                        <span><i class="bi bi-check-circle text-success me-1"></i><?= date('d/m/Y', strtotime($et['fecha_completado'])) ?></span>
-                      <?php endif; ?>
-                    </div>
-                  </li>
-                  <?php endforeach; ?>
-                </ul>
-              </div>
-              <?php endif; ?>
-
             </div>
           </div>
+          <?php endif; ?>
 
           <!-- Indicadores -->
           <?php if (!empty($indicadoresReporte)): ?>
-          <div class="mt-2">
-            <div class="card shadow-sm">
-              <div class="card-header">
-                <h6 class="card-title mb-0 d-flex align-items-center justify-content-between">
-                  <span><i class="bi bi-graph-up me-2" style="color:var(--zf-teal,#1993b8);"></i>Indicadores de seguimiento</span>
-                  <a href="index.php?modulo=indicadores&id=<?= $empresa['id'] ?>" class="small no-print">Ver histórico completo →</a>
-                </h6>
-              </div>
-              <div class="card-body">
-                <div class="row g-3">
-                  <?php foreach ($indicadoresReporte as $ind):
-                    $labels  = $ind['periodos_json'] ? explode(',', $ind['periodos_json']) : [];
-                    $vals    = $ind['valores_json']  ? array_map('floatval', explode(',', $ind['valores_json'])) : [];
-                    $meta    = $ind['meta'] !== null ? (float) $ind['meta'] : null;
-                    $ultimo  = $ind['ultimo_valor']  !== null ? (float) $ind['ultimo_valor'] : null;
-                    $pct     = ($meta && $meta > 0 && $ultimo !== null) ? min(round($ultimo / $meta * 100, 1), 100) : null;
-                    $col     = ($pct === null) ? 'secondary' : ($pct >= 100 ? 'success' : ($pct >= 50 ? 'primary' : 'warning'));
-                  ?>
-                  <div class="col-md-6">
-                    <div class="card border h-100 indicador-card">
-                      <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                          <div class="fw-semibold small"><?= htmlspecialchars($ind['nombre']) ?></div>
-                          <?php if ($pct !== null): ?>
-                            <span class="badge text-bg-<?= $col ?>"><?= $pct ?>%</span>
-                          <?php endif; ?>
-                        </div>
-                        <div class="d-flex gap-3 mb-2">
-                          <div>
-                            <div class="indicador-stat-label">Último valor</div>
-                            <div class="fw-bold text-<?= $col ?>">
-                              <?= $ultimo !== null ? number_format($ultimo, 2, ',', '.') : '—' ?>
-                              <?php if ($ind['unidad']): ?><small class="text-muted fw-normal"><?= htmlspecialchars($ind['unidad']) ?></small><?php endif; ?>
-                            </div>
-                          </div>
-                          <?php if ($meta !== null): ?>
-                          <div>
-                            <div class="indicador-stat-label">Meta</div>
-                            <div class="fw-bold">
-                              <?= number_format($meta, 2, ',', '.') ?>
-                              <?php if ($ind['unidad']): ?><small class="text-muted fw-normal"><?= htmlspecialchars($ind['unidad']) ?></small><?php endif; ?>
-                            </div>
-                          </div>
-                          <?php endif; ?>
-                          <div>
-                            <div class="indicador-stat-label">Período</div>
-                            <div class="fw-semibold small text-muted"><?= htmlspecialchars($ind['ultimo_periodo'] ?? '—') ?></div>
-                          </div>
-                        </div>
-                        <?php if (!empty($labels)): ?>
-                          <canvas class="indicador-chart"
-                                  data-tipo="<?= htmlspecialchars($ind['tipo_grafico'] ?? 'linea') ?>"
-                                  data-comparativo="<?= (int)($ind['comparativo_anual'] ?? 0) ?>"
-                                  data-periodicidad="<?= htmlspecialchars($ind['periodicidad'] ?? '') ?>"
-                                  data-meta="<?= $meta ?? '' ?>"
-                                  data-unidad="<?= htmlspecialchars($ind['unidad'] ?? '') ?>"
-                                  data-labels="<?= htmlspecialchars(json_encode($labels, JSON_UNESCAPED_UNICODE)) ?>"
-                                  data-values="<?= htmlspecialchars(json_encode($vals)) ?>"
-                                  height="100"></canvas>
-                        <?php endif; ?>
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="mb-0"><i class="bi bi-graph-up me-2" style="color:var(--zf-teal,#1993b8);"></i>Indicadores de seguimiento</h6>
+            <a href="index.php?modulo=indicadores&id=<?= $empresa['id'] ?>" class="small text-decoration-none text-zf-teal no-print">
+              Ver histórico completo <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+          <div class="row g-3 mb-4">
+            <?php foreach ($indicadoresReporte as $ind):
+              $labels  = $ind['periodos_json'] ? explode(',', $ind['periodos_json']) : [];
+              $vals    = $ind['valores_json']  ? array_map('floatval', explode(',', $ind['valores_json'])) : [];
+              $meta    = $ind['meta'] !== null ? (float) $ind['meta'] : null;
+              $ultimo  = $ind['ultimo_valor']  !== null ? (float) $ind['ultimo_valor'] : null;
+              $pct     = ($meta && $meta > 0 && $ultimo !== null) ? min(round($ultimo / $meta * 100, 1), 100) : null;
+              $col     = ($pct === null) ? 'secondary' : ($pct >= 100 ? 'success' : ($pct >= 50 ? 'primary' : 'warning'));
+            ?>
+            <div class="col-md-6 col-lg-4">
+              <div class="card border h-100 indicador-card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="fw-semibold small"><?= htmlspecialchars($ind['nombre']) ?></div>
+                    <?php if ($pct !== null): ?>
+                      <span class="badge text-bg-<?= $col ?>"><?= $pct ?>%</span>
+                    <?php endif; ?>
+                  </div>
+                  <div class="d-flex gap-3 mb-2">
+                    <div>
+                      <div class="indicador-stat-label">Último valor</div>
+                      <div class="fw-bold text-<?= $col ?>">
+                        <?= $ultimo !== null ? number_format($ultimo, 2, ',', '.') : '—' ?>
+                        <?php if ($ind['unidad']): ?><small class="text-muted fw-normal"><?= htmlspecialchars($ind['unidad']) ?></small><?php endif; ?>
                       </div>
                     </div>
+                    <?php if ($meta !== null): ?>
+                    <div>
+                      <div class="indicador-stat-label">Meta</div>
+                      <div class="fw-bold">
+                        <?= number_format($meta, 2, ',', '.') ?>
+                        <?php if ($ind['unidad']): ?><small class="text-muted fw-normal"><?= htmlspecialchars($ind['unidad']) ?></small><?php endif; ?>
+                      </div>
+                    </div>
+                    <?php endif; ?>
+                    <div>
+                      <div class="indicador-stat-label">Período</div>
+                      <div class="fw-semibold small text-muted"><?= htmlspecialchars($ind['ultimo_periodo'] ?? '—') ?></div>
+                    </div>
                   </div>
-                  <?php endforeach; ?>
+                  <?php if (!empty($labels)): ?>
+                    <canvas class="indicador-chart"
+                            data-tipo="<?= htmlspecialchars($ind['tipo_grafico'] ?? 'linea') ?>"
+                            data-comparativo="<?= (int)($ind['comparativo_anual'] ?? 0) ?>"
+                            data-periodicidad="<?= htmlspecialchars($ind['periodicidad'] ?? '') ?>"
+                            data-meta="<?= $meta ?? '' ?>"
+                            data-unidad="<?= htmlspecialchars($ind['unidad'] ?? '') ?>"
+                            data-labels="<?= htmlspecialchars(json_encode($labels, JSON_UNESCAPED_UNICODE)) ?>"
+                            data-values="<?= htmlspecialchars(json_encode($vals)) ?>"
+                            height="90"></canvas>
+                  <?php endif; ?>
                 </div>
               </div>
             </div>
+            <?php endforeach; ?>
           </div>
           <?php endif; ?>
 

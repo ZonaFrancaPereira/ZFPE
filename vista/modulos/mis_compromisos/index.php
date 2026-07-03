@@ -87,13 +87,13 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
               </div>
             </div>
             <div class="col-6 col-md-3">
-              <div class="card border-0 shadow-sm px-3 py-3 d-flex flex-column justify-content-center">
-                <div class="d-flex justify-content-between mb-1">
-                  <small class="fw-semibold">Avance</small>
-                  <small class="fw-bold"><?= $pctComp ?>%</small>
-                </div>
-                <div class="progress" style="height:8px;">
-                  <div class="progress-bar bg-success" style="width:<?= $pctComp ?>%"></div>
+              <div class="card text-center border-0 shadow-sm py-3">
+                <div class="fs-2 fw-bold text-success"><?= $pctComp ?>%</div>
+                <div class="text-muted small">Avance</div>
+                <div class="px-4">
+                  <div class="progress" style="height:3px;">
+                    <div class="progress-bar bg-success" style="width:<?= $pctComp ?>%"></div>
+                  </div>
                 </div>
               </div>
             </div>

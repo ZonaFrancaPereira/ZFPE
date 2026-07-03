@@ -15,7 +15,7 @@ $esAdmin       = ($_SESSION['usuario_rol'] ?? '') === 'admin';
 // Mapas de presentación: estado interno -> [color bootstrap, ícono bootstrap-icons]
 $colorEstado = [
     'pendiente'   => ['secondary', 'bi-hourglass-split'],
-    'en_progreso' => ['primary',   'bi-arrow-repeat'],
+    'en_progreso' => ['zf-teal',   'bi-arrow-repeat'],
     'completa'    => ['success',   'bi-check-circle-fill'],
 ];
 $labelEstado = [
@@ -25,7 +25,7 @@ $labelEstado = [
 ];
 $colorReq = [
     'pendiente'   => ['secondary', 'bi-hourglass-split'],
-    'en_progreso' => ['primary',   'bi-arrow-repeat'],
+    'en_progreso' => ['zf-teal',   'bi-arrow-repeat'],
     'cumplido'    => ['success',   'bi-check-circle-fill'],
     'no_aplica'   => ['light',     'bi-dash-circle'],
 ];
@@ -196,15 +196,14 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
             $faseAvancePct = count($faseAvances) > 0
                 ? round(array_sum($faseAvances) / count($faseAvances), 1)
                 : 0;
-            $faseColor = $faseAvancePct >= 100 ? 'success' : ($faseAvancePct > 0 ? 'primary' : 'secondary');
+            $faseColor = $faseAvancePct >= 100 ? 'success' : ($faseAvancePct > 0 ? 'zf-teal' : 'secondary');
           ?>
           <div class="card shadow-sm mb-3 fase-card">
             <!-- Cabecera de fase -->
-            <div class="card-header py-2 d-flex align-items-center justify-content-between"
-                 style="background:linear-gradient(90deg,#fff5f5,#fff);">
+            <div class="card-header py-2 d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center gap-2">
                 <?php if ($cFase['nombre']): ?>
-                  <span class="badge text-white bg-success py-1 px-2">
+                  <span class="badge text-white bg-zf-navy py-1 px-2">
                     <i class="bi bi-collection me-1"></i><?= htmlspecialchars($cFase['nombre']) ?>
                   </span>
                 <?php else: ?>
@@ -226,14 +225,14 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
                 <div class="d-flex align-items-center <?= $si > 0 ? 'flex-grow-1' : '' ?>">
                   <?php if ($si > 0): ?>
                     <div class="flex-grow-1 border-top border-2
-                                <?= $etapa['estado_progreso'] === 'completa' ? 'border-success' : ($etapa['estado_progreso'] === 'en_progreso' ? 'border-primary' : 'border-secondary') ?>"
+                                <?= $etapa['estado_progreso'] === 'completa' ? 'border-success' : ($etapa['estado_progreso'] === 'en_progreso' ? 'border-zf-teal' : 'border-secondary') ?>"
                          style="min-width:24px;"></div>
                   <?php endif; ?>
                   <a href="#etapa-<?= $etapa['id'] ?>" class="text-decoration-none stepper-node">
                     <div class="d-flex flex-column align-items-center text-center flex-shrink-0" style="min-width:72px;">
                       <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold mb-1 text-white bg-<?= $color ?>"
                            style="width:38px;height:38px;font-size:.85rem;
-                                  <?= $etapa['estado_progreso'] === 'en_progreso' ? 'box-shadow:0 0 0 4px rgba(var(--bs-primary-rgb),.2)' : '' ?>">
+                                  <?= $etapa['estado_progreso'] === 'en_progreso' ? 'box-shadow:0 0 0 4px rgba(var(--zf-teal-rgb),.25)' : '' ?>">
                         <?php if ($etapa['estado_progreso'] === 'completa'): ?>
                           <i class="bi bi-check-lg"></i>
                         <?php else: ?>
@@ -261,7 +260,7 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
 
             <?php if ($cFase['nombre']): ?>
             <div class="d-flex align-items-center gap-2 mb-3 mt-1 ms-4">
-              <span class="badge text-white bg-info fs-6 py-1 px-3">
+              <span class="badge text-white bg-zf-navy fs-6 py-1 px-3">
                 <i class="bi bi-collection me-1"></i><?= htmlspecialchars($cFase['nombre']) ?>
               </span>
             </div>
@@ -288,13 +287,13 @@ $iconoDoc = fn(string $nombre) => match (strtolower(pathinfo($nombre, PATHINFO_E
                 <?php endif; ?>
               </div>
               <div class="timeline-content ms-4 mb-4">
-                <div class="card etapa-card etapa-card--<?= $etapa['estado_progreso'] ?> <?= $esActual ? 'border-primary border-2' : '' ?>">
+                <div class="card etapa-card etapa-card--<?= $etapa['estado_progreso'] ?> <?= $esActual ? 'border-zf-teal border-2' : '' ?>">
                   <div class="card-header d-flex align-items-center justify-content-between gap-2 py-2">
                     <div class="d-flex align-items-center gap-2">
                       <span class="fw-semibold"><?= htmlspecialchars($etapa['nombre']) ?></span>
                       <span class="badge bg-<?= $color ?> small"><i class="bi <?= $icon ?> me-1"></i><?= $label ?></span>
                       <?php if ($esActual): ?>
-                        <span class="badge bg-primary bg-opacity-25 text-primary small">
+                        <span class="badge bg-zf-teal bg-opacity-25 text-zf-teal small">
                           <i class="bi bi-arrow-right-circle me-1"></i>Etapa actual
                         </span>
                       <?php endif; ?>

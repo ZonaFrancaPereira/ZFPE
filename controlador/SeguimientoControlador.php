@@ -230,6 +230,11 @@ class SeguimientoControlador extends ControladorBase {
             $this->registrarHistorial($empresa_id, $requisito_id, $estadoPrevio['estado'], $estadoFinal, $observaciones, $documento_id);
         }
 
+        // Notificar a la empresa solo cuando el requisito pasa a "cumplido" (no en cada guardado mientras ya lo estaba)
+        if ($estadoFinal === 'cumplido' && $estadoPrevio['estado'] !== 'cumplido') {
+            $this->notificarRequisitoCumplido($empresa_id, $requisito_id, $observaciones);
+        }
+
         // Recalcular progreso de la etapa
         $etapa = $this->db->prepare("SELECT etapa_id FROM requisitos WHERE id = ?");
         $etapa->execute([$requisito_id]);
@@ -298,6 +303,48 @@ class SeguimientoControlador extends ControladorBase {
             $observaciones ?: null, $fechaCumplimiento, $documento_id,
             $_SESSION['usuario_id'] ?? null,
         ]);
+    }
+
+    /** Notifica por correo a los usuarios de la empresa de que un requisito quedó cumplido. No bloquea el guardado si falla. */
+    private function notificarRequisitoCumplido(int $empresa_id, int $requisito_id, string $observaciones): void {
+        require_once __DIR__ . '/../modelo/UsuariosModelo.php';
+        $usuarios = (new UsuariosModelo($this->db))->obtenerPorEmpresa($empresa_id);
+        if (!$usuarios) {
+            return;
+        }
+
+        $stmt = $this->db->prepare("SELECT nombre FROM requisitos WHERE id = ?");
+        $stmt->execute([$requisito_id]);
+        $requisitoNombre = $stmt->fetchColumn() ?: '';
+
+        $stmt = $this->db->prepare("SELECT razon_social FROM empresas WHERE id = ?");
+        $stmt->execute([$empresa_id]);
+        $empresaNombre = $stmt->fetchColumn() ?: '';
+
+        $fechaCumplimiento = date('d/m/Y');
+        $urlLogin          = APP_URL;
+
+        require_once __DIR__ . '/../modelo/CorreoServicio.php';
+        $correoServicio = new CorreoServicio($this->db);
+
+        foreach ($usuarios as $usuario) {
+            if (empty($usuario['correo'])) {
+                continue;
+            }
+
+            $nombreDestinatario = $usuario['nombre'];
+
+            ob_start();
+            require __DIR__ . '/../vista/plantillas/correo_requisito_cumplido.php';
+            $cuerpoHtml = ob_get_clean();
+
+            $correoServicio->enviar(
+                $usuario['correo'],
+                'Requisito completado — Centro de Control Gerencial ZFPE',
+                $cuerpoHtml,
+                $nombreDestinatario
+            );
+        }
     }
 
     private function upsertRequisito(int $empresa_id, int $requisito_id, string $estado, string $observaciones, ?string $fecha_vencimiento): void {

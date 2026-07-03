@@ -98,6 +98,12 @@ if (!$esAdmin && !$esOperaciones && !empty($_SESSION['usuario_empresa_id'])) {
               <p>Empresas</p>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="index.php?modulo=smtp" class="nav-link <?= ($activePage ?? '') === 'smtp' ? 'active' : '' ?>">
+              <i class="nav-icon bi bi-envelope-gear"></i>
+              <p>Configuración SMTP</p>
+            </a>
+          </li>
         <?php endif; ?>
 
         <?php if ($esOperaciones): ?>

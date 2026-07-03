@@ -34,6 +34,7 @@ class ComitesControlador extends ControladorBase {
                 $_SESSION['flash_error'] = 'El título y la fecha son obligatorios.';
             } else {
                 $id = $modelo->crear($_POST);
+                $this->notificarComiteCreado($_POST);
                 $_SESSION['flash_success'] = 'Comité registrado correctamente.';
                 header('Location: index.php?modulo=comites&accion=ver&id=' . $id);
                 exit;
@@ -41,6 +42,60 @@ class ComitesControlador extends ControladorBase {
         }
 
         require_once __DIR__ . '/../vista/modulos/comites/crear.php';
+    }
+
+    /** Notifica por correo a los usuarios de la empresa vinculada de que se programó un comité. No bloquea la creación si falla. */
+    private function notificarComiteCreado(array $datos): void {
+        $empresa_id = (int) ($datos['empresa_id'] ?? 0);
+        if (!$empresa_id) {
+            return;
+        }
+
+        require_once __DIR__ . '/../modelo/UsuariosModelo.php';
+        $usuarios = (new UsuariosModelo($this->db))->obtenerPorEmpresa($empresa_id);
+        if (!$usuarios) {
+            return;
+        }
+
+        $stmt = $this->db->prepare("SELECT razon_social FROM empresas WHERE id = ?");
+        $stmt->execute([$empresa_id]);
+        $empresaNombre = $stmt->fetchColumn() ?: '';
+
+        $tiposLabel = [
+            'seguimiento'    => 'Seguimiento',
+            'aprobacion'     => 'Aprobación',
+            'revision'       => 'Revisión',
+            'extraordinario' => 'Extraordinario',
+        ];
+
+        $titulo          = trim($datos['titulo'] ?? '');
+        $tipoLabel       = $tiposLabel[$datos['tipo'] ?? ''] ?? 'Seguimiento';
+        $fechaFormateada = !empty($datos['fecha']) ? date('d/m/Y h:i A', strtotime($datos['fecha'])) : '';
+        $lugar           = trim($datos['lugar'] ?? '');
+        $descripcion     = trim($datos['descripcion'] ?? '');
+        $urlLogin        = APP_URL;
+
+        require_once __DIR__ . '/../modelo/CorreoServicio.php';
+        $correoServicio = new CorreoServicio($this->db);
+
+        foreach ($usuarios as $usuario) {
+            if (empty($usuario['correo'])) {
+                continue;
+            }
+
+            $nombreDestinatario = $usuario['nombre'];
+
+            ob_start();
+            require __DIR__ . '/../vista/plantillas/correo_comite_programado.php';
+            $cuerpoHtml = ob_get_clean();
+
+            $correoServicio->enviar(
+                $usuario['correo'],
+                'Nuevo comité programado — Centro de Control Gerencial ZFPE',
+                $cuerpoHtml,
+                $nombreDestinatario
+            );
+        }
     }
 
     public function ver(?int $id): void {
@@ -110,10 +165,55 @@ class ComitesControlador extends ControladorBase {
         if ($comite_id && !empty(trim($_POST['descripcion'] ?? ''))) {
             require_once __DIR__ . '/../modelo/ComitesModelo.php';
             (new ComitesModelo($this->db))->guardarCompromiso($_POST);
+            $this->notificarCompromisoAsignado($comite_id, $_POST);
             $_SESSION['flash_success'] = 'Compromiso registrado correctamente.';
         }
         header('Location: index.php?modulo=comites&accion=ver&id=' . $comite_id);
         exit;
+    }
+
+    /** Notifica por correo al responsable asignado de un compromiso nuevo. No bloquea el registro si falla. */
+    private function notificarCompromisoAsignado(int $comite_id, array $datos): void {
+        $nombreResponsable = trim($datos['responsable'] ?? '');
+        if ($nombreResponsable === '') {
+            return;
+        }
+
+        require_once __DIR__ . '/../modelo/ComitesModelo.php';
+        $comite = (new ComitesModelo($this->db))->obtener($comite_id);
+        if (!$comite) {
+            return;
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT correo, nombre FROM usuarios
+            WHERE nombre = ? AND (rol = 'operaciones' OR empresa_id = ?)
+            LIMIT 1
+        ");
+        $stmt->execute([$nombreResponsable, $comite['empresa_id']]);
+        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$usuario || empty($usuario['correo'])) {
+            return;
+        }
+
+        $nombreDestinatario     = $usuario['nombre'];
+        $comiteTitulo           = $comite['titulo'];
+        $empresaNombre          = $comite['empresa_nombre'] ?? null;
+        $descripcion            = trim($datos['descripcion'] ?? '');
+        $fechaLimiteFormateada  = !empty($datos['fecha_limite']) ? date('d/m/Y', strtotime($datos['fecha_limite'])) : null;
+        $urlLogin               = APP_URL;
+
+        ob_start();
+        require __DIR__ . '/../vista/plantillas/correo_compromiso_asignado.php';
+        $cuerpoHtml = ob_get_clean();
+
+        require_once __DIR__ . '/../modelo/CorreoServicio.php';
+        (new CorreoServicio($this->db))->enviar(
+            $usuario['correo'],
+            'Nuevo compromiso asignado — Centro de Control Gerencial ZFPE',
+            $cuerpoHtml,
+            $nombreDestinatario
+        );
     }
 
     public function actualizarCompromiso(?int $id): void {

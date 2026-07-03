@@ -9,9 +9,17 @@
 :root {
   --zf-navy: #22404b;
   --zf-teal: #1993b8;
+  --zf-navy-rgb: 34, 64, 75;
+  --zf-teal-rgb: 25, 147, 184;
 }
 .text-zf-navy { color: var(--zf-navy) !important; }
 .text-zf-teal { color: var(--zf-teal) !important; }
+/* rgba + --bs-bg-opacity (en vez de un color sólido) para que las utilidades
+   .bg-opacity-* de Bootstrap funcionen igual que con sus colores nativos. */
+.bg-zf-navy     { background-color: rgba(var(--zf-navy-rgb), var(--bs-bg-opacity, 1)) !important; }
+.bg-zf-teal     { background-color: rgba(var(--zf-teal-rgb), var(--bs-bg-opacity, 1)) !important; }
+.border-zf-navy { border-color: var(--zf-navy) !important; }
+.border-zf-teal { border-color: var(--zf-teal) !important; }
 
 /* --- Tarjeta con acento superior en el color corporativo teal. --- */
 .card-acento-teal {
