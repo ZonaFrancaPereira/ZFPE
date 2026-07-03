@@ -34,8 +34,8 @@ $esAdmin       = $rol === 'admin';
 $esOperaciones = $rol === 'operaciones';
 
 // Módulos por rol
-$modulosAdmin       = ['usuarios'];
-$modulosOperaciones = ['empresas', 'configuracion', 'comites', 'seguimiento', 'indicadores'];
+$modulosAdmin       = [];
+$modulosOperaciones = ['usuarios', 'empresas', 'configuracion', 'comites', 'seguimiento', 'indicadores'];
 $modulosUsuario     = ['cronograma', 'entidades', 'documentos', 'reportes', 'mis-compromisos', 'indicadores', 'informes'];
 $modulosValidos     = array_merge($modulosAdmin, $modulosOperaciones, $modulosUsuario, ['manual', 'perfil', 'notificaciones']);
 
@@ -150,9 +150,14 @@ match ($modulo) {
         (new EntidadesUsuarioControlador($db))->index();
     })(),
 
-    'reportes' => (function () use ($id, $db) {
+    'reportes' => (function () use ($accion, $id, $db) {
         require_once __DIR__ . '/controlador/ReportesControlador.php';
-        (new ReportesControlador($db))->index($id);
+        $ctrl = new ReportesControlador($db);
+        match ($accion) {
+            'crear-alerta'   => $ctrl->crearAlerta($id),
+            'resolver-alerta' => $ctrl->resolverAlerta($id),
+            default          => $ctrl->index($id),
+        };
     })(),
 
     'informes' => (function () use ($accion, $id, $db) {

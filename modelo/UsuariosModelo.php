@@ -54,6 +54,13 @@ class UsuariosModelo {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /** Equipo interno (Operaciones/Admin) — para elegir a quién asignar una decisión conjunta. */
+    public function obtenerEquipoInterno(): array {
+        return $this->db->query("
+            SELECT * FROM usuarios WHERE rol IN ('operaciones','admin') ORDER BY nombre ASC
+        ")->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function obtenerTodosDeEmpresas(): array {
         return $this->db->query("
             SELECT u.*, e.razon_social AS empresa_nombre
@@ -66,38 +73,42 @@ class UsuariosModelo {
 
     public function crearParaEmpresa(array $datos, int $empresa_id): bool {
         $stmt = $this->db->prepare("
-            INSERT INTO usuarios (nombre, correo, contrasena, rol, empresa_id, creado_en)
-            VALUES (?, ?, ?, 'usuario', ?, NOW())
+            INSERT INTO usuarios (nombre, correo, contrasena, rol, empresa_id, es_gerente, creado_en)
+            VALUES (?, ?, ?, 'usuario', ?, ?, NOW())
         ");
         return $stmt->execute([
             $datos['nombre'],
             $datos['correo'],
             password_hash($datos['contrasena'], PASSWORD_DEFAULT),
             $empresa_id,
+            !empty($datos['es_gerente']) ? 1 : 0,
         ]);
     }
 
     public function actualizarUsuarioEmpresa(int $id, array $datos): bool {
         $empresa_id = array_key_exists('empresa_id', $datos) ? $datos['empresa_id'] : false;
+        $esGerente  = !empty($datos['es_gerente']) ? 1 : 0;
         if (!empty($datos['contrasena'])) {
             $stmt = $this->db->prepare("
-                UPDATE usuarios SET nombre=?, correo=?, contrasena=?, empresa_id=? WHERE id=? AND rol='usuario'
+                UPDATE usuarios SET nombre=?, correo=?, contrasena=?, empresa_id=?, es_gerente=? WHERE id=? AND rol='usuario'
             ");
             return $stmt->execute([
                 $datos['nombre'],
                 $datos['correo'],
                 password_hash($datos['contrasena'], PASSWORD_DEFAULT),
                 $empresa_id !== false ? $empresa_id : null,
+                $esGerente,
                 $id,
             ]);
         }
         $stmt = $this->db->prepare("
-            UPDATE usuarios SET nombre=?, correo=?, empresa_id=? WHERE id=? AND rol='usuario'
+            UPDATE usuarios SET nombre=?, correo=?, empresa_id=?, es_gerente=? WHERE id=? AND rol='usuario'
         ");
         return $stmt->execute([
             $datos['nombre'],
             $datos['correo'],
             $empresa_id !== false ? $empresa_id : null,
+            $esGerente,
             $id,
         ]);
     }

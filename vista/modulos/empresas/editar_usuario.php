@@ -111,6 +111,18 @@ $back    = $empresa
                     <div class="form-text">Puede reasignar este usuario a otra empresa o dejarlo sin empresa.</div>
                   </div>
 
+                  <div class="form-check mb-4">
+                    <?php $esGerenteVal = array_key_exists('es_gerente', $_POST) ? !empty($_POST['es_gerente']) : !empty($usuario['es_gerente']); ?>
+                    <input type="checkbox" class="form-check-input" id="es_gerente" name="es_gerente" value="1"
+                           <?= $esGerenteVal ? 'checked' : '' ?>>
+                    <label class="form-check-label fw-semibold" for="es_gerente">
+                      Es gerente de la empresa
+                    </label>
+                    <div class="form-text">
+                      Recibirá las alertas ejecutivas (riesgos, decisiones, reuniones) que no tengan destinatarios específicos.
+                    </div>
+                  </div>
+
                   <hr>
                   <p class="text-muted small mb-3">
                     <i class="bi bi-shield-lock me-1"></i>

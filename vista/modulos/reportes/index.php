@@ -386,6 +386,79 @@ if ($empresa) {
             <!-- Columna derecha -->
             <div class="col-lg-5">
 
+              <!-- Alertas ejecutivas -->
+              <?php
+              $prioridadInfo = [
+                  'alta'  => ['danger',  'bi-exclamation-octagon-fill', 'Requiere decisión'],
+                  'media' => ['warning', 'bi-exclamation-triangle-fill', 'Atención'],
+                  'baja'  => ['success', 'bi-check-circle-fill', 'Sin novedad'],
+              ];
+              // Una reunión es informativa: siempre azul, sin importar la prioridad guardada.
+              $infoAlerta = function (array $alerta) use ($prioridadInfo): array {
+                  if ($alerta['tipo'] === 'reunion') {
+                      return ['info', 'bi-camera-video-fill', 'Reunión'];
+                  }
+                  return $prioridadInfo[$alerta['prioridad']] ?? ['secondary', 'bi-info-circle-fill', ucfirst($alerta['prioridad'])];
+              };
+              ?>
+              <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                  <h6 class="card-title mb-0"><i class="bi bi-megaphone-fill me-2 text-danger"></i>Alertas ejecutivas</h6>
+                  <?php if ($esOperaciones || $esAdmin): ?>
+                  <button type="button" class="btn btn-sm btn-outline-danger no-print" data-bs-toggle="modal" data-bs-target="#modalNuevaAlerta">
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+                  <?php endif; ?>
+                </div>
+                <div class="card-body p-0">
+                  <?php if (empty($alertasEjecutivas)): ?>
+                    <div class="text-center text-muted py-4 small">
+                      <i class="bi bi-check-circle fs-3 d-block mb-1 opacity-25"></i>
+                      Sin alertas activas.
+                    </div>
+                  <?php else: ?>
+                    <?php
+                    $hexAlerta = ['danger' => '#dc3545', 'warning' => '#ffc107', 'success' => '#198754', 'info' => '#0dcaf0', 'secondary' => '#6c757d'];
+                    ?>
+                    <ul class="list-group list-group-flush">
+                      <?php foreach ($alertasEjecutivas as $alerta):
+                        [$aColor, $aIcono, $aLabel] = $infoAlerta($alerta);
+                      ?>
+                      <li class="list-group-item bg-<?= $aColor ?>-subtle bg-opacity-50 py-2"
+                          style="border-left:4px solid <?= $hexAlerta[$aColor] ?? '#6c757d' ?>;">
+                        <div class="d-flex align-items-start justify-content-between gap-2">
+                          <div class="min-w-0">
+                            <div class="fw-semibold small text-<?= $aColor ?>">
+                              <i class="bi <?= $aIcono ?> me-1"></i><?= $aLabel ?>
+                            </div>
+                            <div class="small"><?= htmlspecialchars($alerta['mensaje']) ?></div>
+                            <?php if (!empty($alerta['enlace_reunion'])): ?>
+                              <a href="<?= htmlspecialchars($alerta['enlace_reunion']) ?>" target="_blank" rel="noopener"
+                                 class="btn btn-sm btn-info text-white mt-1">
+                                <i class="bi bi-camera-video me-1"></i>Unirse a la reunión
+                              </a>
+                            <?php endif; ?>
+                            <?php if (!empty($alerta['destinatario_nombres'])): ?>
+                              <div class="text-muted mt-1" style="font-size:.7rem;">
+                                <i class="bi bi-person-check me-1"></i>Para: <?= htmlspecialchars($alerta['destinatario_nombres']) ?>
+                              </div>
+                            <?php endif; ?>
+                          </div>
+                          <?php if ($esOperaciones || $esAdmin): ?>
+                          <button type="button" class="btn btn-sm btn-outline-secondary no-print flex-shrink-0"
+                                  title="Marcar resuelta" data-bs-toggle="modal" data-bs-target="#modalResolverAlerta"
+                                  data-id="<?= $alerta['id'] ?>" data-mensaje="<?= htmlspecialchars(mb_substr($alerta['mensaje'], 0, 80)) ?>">
+                            <i class="bi bi-check-lg"></i>
+                          </button>
+                          <?php endif; ?>
+                        </div>
+                      </li>
+                      <?php endforeach; ?>
+                    </ul>
+                  <?php endif; ?>
+                </div>
+              </div>
+
               <!-- Distribución de requisitos -->
               <div class="card shadow-sm mb-4">
                 <div class="card-header">
@@ -597,6 +670,178 @@ if ($empresa) {
 
   <?php require_once __DIR__ . '/../../parciales/pie.php'; ?>
 </div>
+
+<?php if ($empresa && ($esOperaciones || $esAdmin)): ?>
+<!-- Modal nueva alerta ejecutiva -->
+<div class="modal fade" id="modalNuevaAlerta" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form method="POST" action="index.php?modulo=reportes&accion=crear-alerta&id=<?= $empresa['id'] ?>">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-megaphone-fill me-2 text-danger"></i>Nueva alerta ejecutiva</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">1. ¿Qué tipo de alerta es?</label>
+            <select name="tipo" id="tipoAlertaSelect" class="form-select">
+              <option value="pendiente">Pendiente</option>
+              <option value="decision">Decisión</option>
+              <option value="vencimiento">Vencimiento</option>
+              <option value="bloqueo">Bloqueo</option>
+              <option value="documento">Documento</option>
+              <option value="reunion">Reunión (solo informativa, no es un riesgo)</option>
+            </select>
+          </div>
+
+          <div class="mb-3" id="campoPrioridad">
+            <label class="form-label fw-semibold d-block">2. ¿Qué tan urgente es?</label>
+            <div class="row g-2">
+              <div class="col-4">
+                <label class="rol-card card h-100 text-center p-2 border-2" for="nivelBaja">
+                  <input type="radio" name="prioridad" id="nivelBaja" value="baja" class="d-none">
+                  <i class="bi bi-check-circle-fill fs-3 mb-1 text-success d-block"></i>
+                  <div class="fw-semibold small">Sin novedad</div>
+                  <small class="text-muted" style="font-size:.68rem;">Solo informativo</small>
+                </label>
+              </div>
+              <div class="col-4">
+                <label class="rol-card card h-100 text-center p-2 border-2 selected" for="nivelMedia">
+                  <input type="radio" name="prioridad" id="nivelMedia" value="media" class="d-none" checked>
+                  <i class="bi bi-exclamation-triangle-fill fs-3 mb-1 text-warning d-block"></i>
+                  <div class="fw-semibold small">Atención</div>
+                  <small class="text-muted" style="font-size:.68rem;">Avisa a Gerencia</small>
+                </label>
+              </div>
+              <div class="col-4">
+                <label class="rol-card card h-100 text-center p-2 border-2" for="nivelAlta">
+                  <input type="radio" name="prioridad" id="nivelAlta" value="alta" class="d-none">
+                  <i class="bi bi-exclamation-octagon-fill fs-3 mb-1 text-danger d-block"></i>
+                  <div class="fw-semibold small">Requiere decisión</div>
+                  <small class="text-muted" style="font-size:.68rem;">Decisión conjunta</small>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 d-none" id="campoEnlaceReunion">
+            <label class="form-label fw-semibold">Enlace de conexión</label>
+            <input type="url" name="enlace_reunion" class="form-control" placeholder="https://meet.google.com/...">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">3. Mensaje</label>
+            <textarea name="mensaje" class="form-control" rows="3" required
+                      placeholder="Ej. Definir ampliación de área declarada. Aprobar inversión proyectada."></textarea>
+          </div>
+
+          <div>
+            <label class="form-label fw-semibold d-block">4. ¿Quién debe verla?</label>
+            <div class="form-check">
+              <input type="radio" name="modoDestinatarios" id="modoAutomatico" class="form-check-input" checked>
+              <label class="form-check-label" for="modoAutomatico">
+                Automático — la ve el/la gerente de la empresa y todo Operaciones/Admin
+              </label>
+            </div>
+            <div class="form-check mb-2">
+              <input type="radio" name="modoDestinatarios" id="modoEspecifico" class="form-check-input">
+              <label class="form-check-label" for="modoEspecifico">
+                Elegir personas específicas (ej. una decisión conjunta con alguien puntual)
+              </label>
+            </div>
+
+            <div id="listaDestinatarios" class="d-none border rounded p-2" style="max-height:180px;overflow-y:auto;">
+              <?php if (!empty($usuariosEmpresa)): ?>
+                <div class="text-muted text-uppercase fw-semibold mb-1" style="font-size:.65rem;letter-spacing:.04em;">Empresa</div>
+                <?php foreach ($usuariosEmpresa as $u): ?>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="destinatarios[]" value="<?= $u['id'] ?>" id="dest-<?= $u['id'] ?>">
+                    <label class="form-check-label small" for="dest-<?= $u['id'] ?>">
+                      <?= htmlspecialchars($u['nombre']) ?><?= !empty($u['es_gerente']) ? ' <span class="badge text-bg-light border">Gerente</span>' : '' ?>
+                    </label>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+              <?php if (!empty($equipoInterno)): ?>
+                <div class="text-muted text-uppercase fw-semibold mb-1 mt-2" style="font-size:.65rem;letter-spacing:.04em;">Operaciones / Admin</div>
+                <?php foreach ($equipoInterno as $u): ?>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="destinatarios[]" value="<?= $u['id'] ?>" id="dest-<?= $u['id'] ?>">
+                    <label class="form-check-label small" for="dest-<?= $u['id'] ?>"><?= htmlspecialchars($u['nombre']) ?></label>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger"><i class="bi bi-plus-lg me-1"></i>Registrar alerta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal resolver alerta -->
+<div class="modal fade" id="modalResolverAlerta" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" id="formResolverAlerta">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-check-circle-fill me-2 text-success"></i>Marcar alerta como resuelta</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-2" id="mensajeAlertaResolver"></p>
+          <label class="form-label fw-semibold">Comentario (opcional)</label>
+          <textarea name="comentario" class="form-control" rows="3"
+                    placeholder="Ej. Se aprobó la ampliación en reunión del 3 de julio."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Marcar resuelta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('tipoAlertaSelect').addEventListener('change', function () {
+  const esReunion = this.value === 'reunion';
+  document.getElementById('campoEnlaceReunion').classList.toggle('d-none', !esReunion);
+  document.getElementById('campoPrioridad').classList.toggle('d-none', esReunion);
+});
+
+document.querySelectorAll('#modalNuevaAlerta input[name="prioridad"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.querySelectorAll('#modalNuevaAlerta .rol-card').forEach(c => c.classList.remove('selected'));
+    radio.closest('.rol-card').classList.add('selected');
+  });
+});
+
+document.querySelectorAll('input[name="modoDestinatarios"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    const especifico = document.getElementById('modoEspecifico').checked;
+    document.getElementById('listaDestinatarios').classList.toggle('d-none', !especifico);
+    // Si vuelve a "automático", se descartan las selecciones para que no se envíen ocultas.
+    if (!especifico) {
+      document.querySelectorAll('#listaDestinatarios input[type="checkbox"]').forEach(cb => cb.checked = false);
+    }
+  });
+});
+
+document.getElementById('modalResolverAlerta').addEventListener('show.bs.modal', function (e) {
+  const btn = e.relatedTarget;
+  document.getElementById('formResolverAlerta').action =
+    'index.php?modulo=reportes&accion=resolver-alerta&id=' + btn.dataset.id;
+  document.getElementById('mensajeAlertaResolver').textContent = btn.dataset.mensaje;
+});
+</script>
+<?php endif; ?>
 
 <style>
 @media print {

@@ -114,6 +114,12 @@ if (!$esAdmin && !$esOperaciones && !empty($_SESSION['usuario_empresa_id'])) {
             </a>
           </li>
           <li class="nav-item">
+            <a href="index.php?modulo=usuarios" class="nav-link <?= ($activePage ?? '') === 'usuarios' ? 'active' : '' ?>">
+              <i class="nav-icon bi bi-person-badge-fill"></i>
+              <p>Usuarios internos</p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="index.php?modulo=configuracion" class="nav-link <?= ($activePage ?? '') === 'configuracion' ? 'active' : '' ?>">
               <i class="nav-icon bi bi-sliders"></i>
               <p>Configuración</p>

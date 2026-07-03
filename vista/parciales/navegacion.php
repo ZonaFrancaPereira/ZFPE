@@ -11,6 +11,9 @@ if (!empty($_SESSION['usuario_id'])) {
     );
 }
 $notifIcono = [
+    'alerta_critica'      => ['bi-megaphone-fill', 'text-danger'],
+    'alerta_potencial'    => ['bi-megaphone-fill', 'text-warning'],
+    'alerta_reunion'      => ['bi-camera-video-fill', 'text-info'],
     'vencido'             => ['bi-exclamation-circle-fill', 'text-danger'],
     'compromiso_vencido'  => ['bi-exclamation-circle-fill', 'text-danger'],
     'por_vencer'          => ['bi-clock-fill', 'text-warning'],

@@ -13,9 +13,16 @@ class ReportesControlador extends ControladorBase {
         $totalDocs          = 0;
         $todasEmpresas      = [];
         $indicadoresReporte = [];
+        $alertasEjecutivas  = [];
+        $usuariosEmpresa    = [];
+        $equipoInterno      = [];
 
         require_once __DIR__ . '/../modelo/EmpresasModelo.php';
+        require_once __DIR__ . '/../modelo/AlertasModelo.php';
+        require_once __DIR__ . '/../modelo/UsuariosModelo.php';
         $modeloEmpresas = new EmpresasModelo($this->db);
+        $modeloAlertas  = new AlertasModelo($this->db);
+        $modeloUsuarios = new UsuariosModelo($this->db);
 
         if ($this->esOp()) {
             if ($id) {
@@ -23,6 +30,9 @@ class ReportesControlador extends ControladorBase {
                 if ($empresa) {
                     $empresa_id = $id;
                     $this->cargarDatos($empresa_id, $etapas, $resumenEstados, $vencidos, $porVencer, $totalDocs, $indicadoresReporte);
+                    $alertasEjecutivas = $modeloAlertas->listarPorEmpresa($empresa_id);
+                    $usuariosEmpresa   = $modeloUsuarios->obtenerPorEmpresa($empresa_id);
+                    $equipoInterno     = $modeloUsuarios->obtenerEquipoInterno();
                 }
             } else {
                 $todasEmpresas = $modeloEmpresas->obtenerTodas();
@@ -32,10 +42,64 @@ class ReportesControlador extends ControladorBase {
             if ($empresa_id) {
                 $empresa = $modeloEmpresas->obtenerPorId($empresa_id);
                 $this->cargarDatos($empresa_id, $etapas, $resumenEstados, $vencidos, $porVencer, $totalDocs, $indicadoresReporte);
+                $alertasEjecutivas = $modeloAlertas->listarPorEmpresa($empresa_id);
             }
         }
 
         require_once __DIR__ . '/../vista/modulos/reportes/index.php';
+    }
+
+    /** Solo Operaciones/Admin puede marcar una nueva alerta ejecutiva para una empresa. */
+    public function crearAlerta(?int $id): void {
+        $this->exigirPost('index.php?modulo=reportes');
+        if (!$this->esOp() || !$id) {
+            header('Location: index.php?modulo=reportes');
+            exit;
+        }
+
+        $mensaje = trim($_POST['mensaje'] ?? '');
+        if ($mensaje === '') {
+            $_SESSION['flash_error'] = 'El mensaje de la alerta es obligatorio.';
+            header('Location: index.php?modulo=reportes&id=' . $id);
+            exit;
+        }
+
+        $destinatarios = array_map('intval', $_POST['destinatarios'] ?? []);
+
+        require_once __DIR__ . '/../modelo/AlertasModelo.php';
+        (new AlertasModelo($this->db))->crear(
+            $id,
+            $_POST['tipo'] ?? 'pendiente',
+            $_POST['prioridad'] ?? 'media',
+            $mensaje,
+            $_POST['enlace_reunion'] ?? null,
+            $destinatarios
+        );
+        $_SESSION['flash_success'] = 'Alerta ejecutiva registrada.';
+        header('Location: index.php?modulo=reportes&id=' . $id);
+        exit;
+    }
+
+    /** Marca una alerta como resuelta; vuelve al reporte de la misma empresa. */
+    public function resolverAlerta(?int $id): void {
+        $this->exigirPost('index.php?modulo=reportes');
+        if (!$this->esOp() || !$id) {
+            header('Location: index.php?modulo=reportes');
+            exit;
+        }
+
+        require_once __DIR__ . '/../modelo/AlertasModelo.php';
+        $modeloAlertas = new AlertasModelo($this->db);
+        $alerta = $modeloAlertas->obtener($id);
+        if (!$alerta) {
+            header('Location: index.php?modulo=reportes');
+            exit;
+        }
+
+        $modeloAlertas->resolver($id, $_POST['comentario'] ?? null);
+        $_SESSION['flash_success'] = 'Alerta marcada como resuelta.';
+        header('Location: index.php?modulo=reportes&id=' . $alerta['empresa_id']);
+        exit;
     }
 
     private function cargarDatos(

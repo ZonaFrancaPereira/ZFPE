@@ -26,10 +26,13 @@ class NotificacionesModelo {
 
     // Menor número = más urgente = aparece primero en la campana.
     private const PRIORIDAD = [
+        'alerta_critica'      => 1,
         'vencido'             => 1,
         'compromiso_vencido'  => 1,
+        'alerta_potencial'    => 2,
         'por_vencer'          => 2,
         'compromiso'          => 2,
+        'alerta_reunion'      => 2,
         'cambio'              => 3,
         'documento'           => 3,
     ];
@@ -83,6 +86,24 @@ class NotificacionesModelo {
     private function paraCliente(int $usuarioId, int $empresaId, string $nombreUsuario): array {
         $items = [];
 
+        // Alertas ejecutivas de mi empresa: las veo si me asignaron explícitamente,
+        // o si nadie fue asignado y yo soy el/la gerente de la empresa.
+        require_once __DIR__ . '/AlertasModelo.php';
+        $stmtGerente = $this->db->prepare("SELECT es_gerente FROM usuarios WHERE id = ?");
+        $stmtGerente->execute([$usuarioId]);
+        $esGerente = (bool) $stmtGerente->fetchColumn();
+
+        foreach ((new AlertasModelo($this->db))->listarPorEmpresa($empresaId) as $a) {
+            $esNotificable = in_array($a['prioridad'], ['alta', 'media'], true) || $a['tipo'] === 'reunion';
+            if (!$esNotificable) continue;
+
+            $destinatarios = AlertasModelo::idsDesdeConcat($a['destinatario_ids'] ?? null);
+            $meVeToca = !empty($destinatarios) ? in_array($usuarioId, $destinatarios, true) : $esGerente;
+            if (!$meVeToca) continue;
+
+            $items[] = $this->itemAlertaEjecutiva($a, 'index.php?modulo=reportes&id=' . $empresaId);
+        }
+
         // Compromisos de comité donde soy responsable y aún no están cumplidos
         foreach ($this->comites->misCompromisos($nombreUsuario, $empresaId) as $c) {
             if ($c['estado'] === 'cumplido') continue;
@@ -129,6 +150,19 @@ class NotificacionesModelo {
 
     private function paraOperaciones(int $usuarioId, string $nombreUsuario): array {
         $items = [];
+
+        // Alertas ejecutivas activas (riesgo potencial/crítico o reuniones; "sin novedad" no notifica).
+        // Si la alerta tiene destinatarios puntuales, solo la ve quien esté en esa lista.
+        require_once __DIR__ . '/AlertasModelo.php';
+        foreach ((new AlertasModelo($this->db))->listarGlobal() as $a) {
+            $esNotificable = in_array($a['prioridad'], ['alta', 'media'], true) || $a['tipo'] === 'reunion';
+            if (!$esNotificable) continue;
+
+            $destinatarios = AlertasModelo::idsDesdeConcat($a['destinatario_ids'] ?? null);
+            if (!empty($destinatarios) && !in_array($usuarioId, $destinatarios, true)) continue;
+
+            $items[] = $this->itemAlertaEjecutiva($a, 'index.php?modulo=reportes&id=' . $a['empresa_id']);
+        }
 
         // Compromisos de comité donde soy responsable (cualquier empresa) y no están cumplidos
         foreach ($this->comites->misCompromisosGlobal($nombreUsuario) as $c) {
@@ -212,6 +246,31 @@ class NotificacionesModelo {
     }
 
     // --- Helpers de armado de cada tipo de notificación ---
+
+    private function itemAlertaEjecutiva(array $a, string $url): array {
+        $prefijo = !empty($a['empresa_nombre']) ? $a['empresa_nombre'] . ' · ' : '';
+
+        if ($a['tipo'] === 'reunion') {
+            return [
+                'tipo'  => 'alerta_reunion',
+                'clave' => 'alerta-' . $a['id'],
+                'texto' => 'Reunión: ' . $a['mensaje'],
+                'meta'  => $prefijo . $this->tiempoRelativo($a['creado_en']),
+                'url'   => $url,
+                'fecha' => $a['creado_en'],
+            ];
+        }
+
+        $esCritica = $a['prioridad'] === 'alta';
+        return [
+            'tipo'  => $esCritica ? 'alerta_critica' : 'alerta_potencial',
+            'clave' => 'alerta-' . $a['id'],
+            'texto' => ($esCritica ? 'Decisión requerida: ' : 'Riesgo potencial: ') . $a['mensaje'],
+            'meta'  => $prefijo . $this->tiempoRelativo($a['creado_en']),
+            'url'   => $url,
+            'fecha' => $a['creado_en'],
+        ];
+    }
 
     private function itemVencimiento(array $r, int $empresaId, string $url, ?string $empresaNombre = null): array {
         $dias    = (int) floor((strtotime($r['fecha_vencimiento']) - strtotime(date('Y-m-d'))) / 86400);

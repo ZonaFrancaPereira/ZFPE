@@ -2,7 +2,7 @@
 /** @var array $usuario */
 $pageTitle   = 'Editar usuario — ZFPE';
 $activePage  = 'usuarios';
-$pageStyles  = ['vista/assets/css/componentes.css', 'vista/assets/css/usuarios.css'];
+$pageStyles  = ['vista/assets/css/componentes.css'];
 $pageScripts = ['vista/assets/js/usuarios-editar.js'];
 ?>
 <?php require_once __DIR__ . '/../../parciales/cabecera.php'; ?>

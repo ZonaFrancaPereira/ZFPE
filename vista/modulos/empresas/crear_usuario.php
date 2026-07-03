@@ -102,6 +102,17 @@ $v = fn(string $k) => htmlspecialchars($_POST[$k] ?? '');
                     <div id="errorPass" class="text-danger small mt-1" style="display:none;">Las contraseñas no coinciden.</div>
                   </div>
 
+                  <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="es_gerente" name="es_gerente" value="1"
+                           <?= !empty($_POST['es_gerente']) ? 'checked' : '' ?>>
+                    <label class="form-check-label fw-semibold" for="es_gerente">
+                      Es gerente de la empresa
+                    </label>
+                    <div class="form-text">
+                      Recibirá las alertas ejecutivas (riesgos, decisiones, reuniones) que no tengan destinatarios específicos.
+                    </div>
+                  </div>
+
                   <div class="alert alert-info py-2 mb-0 small">
                     <i class="bi bi-info-circle me-1"></i>
                     El usuario tendrá acceso como <strong>usuario de empresa</strong> y podrá ver el avance de <?= htmlspecialchars($empresa['razon_social']) ?>.

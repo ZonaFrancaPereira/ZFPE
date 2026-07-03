@@ -22,6 +22,21 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, .1) !important;
 }
 
+/* --- Tarjeta seleccionable tipo "radio" (elegir rol, nivel de alerta, etc.):
+   se resalta con .selected cuando su input de radio queda marcado. --- */
+.rol-card {
+  cursor: pointer;
+  transition: border-color .15s, background-color .15s;
+  border-color: var(--bs-border-color) !important;
+}
+.rol-card:hover {
+  border-color: var(--bs-primary) !important;
+}
+.rol-card.selected {
+  border-color: var(--bs-primary) !important;
+  background-color: rgba(var(--bs-primary-rgb), .06);
+}
+
 /* --- Botón con degradado navy → teal, usado para acciones destacadas
    (ej. descargas) que deben resaltar sobre el resto de la interfaz. --- */
 .btn-zf-gradient {
