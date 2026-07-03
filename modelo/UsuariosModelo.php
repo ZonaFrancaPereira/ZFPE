@@ -71,17 +71,18 @@ class UsuariosModelo {
         ")->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function crearParaEmpresa(array $datos, int $empresa_id): bool {
+    public function crearParaEmpresa(array $datos, int $empresa_id, bool $debeCambiarContrasena = false): bool {
         $stmt = $this->db->prepare("
-            INSERT INTO usuarios (nombre, correo, contrasena, rol, empresa_id, es_gerente, creado_en)
-            VALUES (?, ?, ?, 'usuario', ?, ?, NOW())
+            INSERT INTO usuarios (nombre, correo, contrasena, rol, empresa_id, es_gerente, debe_cambiar_contrasena, creado_en)
+            VALUES (?, ?, ?, 'usuario', ?, ?, ?, NOW())
         ");
         return $stmt->execute([
-            $datos['nombre'],
+            $datos['nombre'] ?? $datos['razon_social'] ?? 'Empresa',
             $datos['correo'],
             password_hash($datos['contrasena'], PASSWORD_DEFAULT),
             $empresa_id,
             !empty($datos['es_gerente']) ? 1 : 0,
+            $debeCambiarContrasena ? 1 : 0,
         ]);
     }
 
@@ -119,7 +120,7 @@ class UsuariosModelo {
     }
 
     public function actualizarContrasena(int $id, string $nuevaContrasena): bool {
-        $stmt = $this->db->prepare("UPDATE usuarios SET contrasena = ? WHERE id = ?");
+        $stmt = $this->db->prepare("UPDATE usuarios SET contrasena = ?, debe_cambiar_contrasena = 0 WHERE id = ?");
         return $stmt->execute([password_hash($nuevaContrasena, PASSWORD_DEFAULT), $id]);
     }
 

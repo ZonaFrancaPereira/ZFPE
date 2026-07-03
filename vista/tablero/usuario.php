@@ -29,7 +29,19 @@ $estadoLabel = [
     'en_progreso' => 'En progreso',
     'completa'    => 'Completa',
 ];
-$prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
+$prioridadInfoDash = [
+    'alta'  => ['danger',  'bi-exclamation-octagon-fill',  'Requiere decisión'],
+    'media' => ['warning', 'bi-exclamation-triangle-fill', 'Atención'],
+    'baja'  => ['success', 'bi-check-circle-fill',         'Sin novedad'],
+];
+// Una reunión es informativa: siempre azul, sin importar la prioridad guardada.
+$infoAlertaDash = function (array $alerta) use ($prioridadInfoDash): array {
+    if ($alerta['tipo'] === 'reunion') {
+        return ['info', 'bi-camera-video-fill', 'Reunión'];
+    }
+    return $prioridadInfoDash[$alerta['prioridad']] ?? ['secondary', 'bi-info-circle-fill', ucfirst($alerta['prioridad'])];
+};
+$hexAlertaDash = ['danger' => '#dc3545', 'warning' => '#ffc107', 'success' => '#198754', 'info' => '#0dcaf0', 'secondary' => '#6c757d'];
 ?>
 
 <div class="app-wrapper">
@@ -556,7 +568,7 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
                 <div class="card-header">
                   <h6 class="card-title mb-0"><i class="bi bi-diagram-3 me-2 text-success"></i>Avance por etapa</h6>
                 </div>
-                <div class="card-body" style="max-height:260px;overflow-y:auto;">
+                <div class="card-body">
                   <?php foreach ($empresa['etapas'] as $etapa): ?>
                   <div class="mb-3">
                     <div class="d-flex align-items-center justify-content-between mb-1">
@@ -717,82 +729,84 @@ $prioridadColor = ['alta' => 'danger', 'media' => 'warning', 'baja' => 'info'];
           </div>
           <?php endif; ?>
 
-          <div class="row g-4">
-
-            <!-- Requisitos pendientes + Alertas -->
-            <div class="col-lg-8 mx-auto d-flex flex-column gap-4">
-
-              <!-- Alertas -->
-              <?php if (!empty($alertas)): ?>
-              <div class="card shadow-sm border-danger border-opacity-50">
-                <div class="card-header bg-danger bg-opacity-10">
-                  <h5 class="card-title mb-0 text-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>Alertas activas
-                  </h5>
+          <!-- Alertas ejecutivas -->
+          <?php if (!empty($alertas)): ?>
+          <div class="row g-4 mb-4">
+            <div class="col-lg-8 mx-auto">
+              <div class="card shadow-sm">
+                <div class="card-header">
+                  <h5 class="card-title mb-0"><i class="bi bi-megaphone-fill me-2 text-danger"></i>Alertas ejecutivas</h5>
                 </div>
                 <div class="card-body p-0">
                   <ul class="list-group list-group-flush">
-                    <?php foreach ($alertas as $alerta): ?>
-                    <li class="list-group-item px-3 py-2">
-                      <div class="d-flex align-items-start gap-2">
-                        <span class="badge text-bg-<?= $prioridadColor[$alerta['prioridad']] ?? 'secondary' ?> mt-1 flex-shrink-0">
-                          <?= ucfirst($alerta['prioridad']) ?>
-                        </span>
-                        <small><?= htmlspecialchars($alerta['mensaje']) ?></small>
+                    <?php foreach ($alertas as $alerta):
+                      [$aColorDash, $aIconoDash, $aLabelDash] = $infoAlertaDash($alerta);
+                    ?>
+                    <li class="list-group-item bg-<?= $aColorDash ?>-subtle bg-opacity-50 py-2"
+                        style="border-left:4px solid <?= $hexAlertaDash[$aColorDash] ?? '#6c757d' ?>;">
+                      <div class="fw-semibold small text-<?= $aColorDash ?>">
+                        <i class="bi <?= $aIconoDash ?> me-1"></i><?= $aLabelDash ?>
                       </div>
+                      <div class="small"><?= htmlspecialchars($alerta['mensaje']) ?></div>
+                      <?php if (!empty($alerta['enlace_reunion'])): ?>
+                        <a href="<?= htmlspecialchars($alerta['enlace_reunion']) ?>" target="_blank" rel="noopener"
+                           class="btn btn-sm btn-info text-white mt-1">
+                          <i class="bi bi-camera-video me-1"></i>Unirse a la reunión
+                        </a>
+                      <?php endif; ?>
                     </li>
                     <?php endforeach; ?>
                   </ul>
                 </div>
               </div>
-              <?php endif; ?>
+            </div>
+          </div>
+          <?php endif; ?>
 
-              <!-- Requisitos pendientes -->
-              <div class="card shadow-sm flex-grow-1 card-acento-teal">
-                <div class="card-header">
-                  <h5 class="card-title mb-0">
-                    <i class="bi bi-hourglass-split me-2 text-warning"></i>Requisitos pendientes
-                  </h5>
-                </div>
-                <div class="card-body p-0">
-                  <?php if (empty($requisitos_pendientes)): ?>
-                    <div class="text-center text-muted py-4">
-                      <i class="bi bi-check-circle fs-2 text-success opacity-50 d-block mb-2"></i>
-                      ¡Sin requisitos pendientes!
+          <!-- Requisitos pendientes -->
+          <div class="d-flex align-items-center justify-content-between py-2 px-3 rounded-2 mb-3"
+               style="background:linear-gradient(90deg, var(--zf-navy,#22404b), var(--zf-teal,#1993b8));">
+            <span class="badge py-1 px-2" style="background:rgba(255,255,255,.15);color:#fff;">
+              <i class="bi bi-hourglass-split me-1"></i>REQUISITOS PENDIENTES
+            </span>
+            <a href="index.php?modulo=cronograma" class="small text-decoration-none text-white fw-semibold">
+              Ver cronograma <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+          <?php if (empty($requisitos_pendientes)): ?>
+            <div class="card shadow-sm mb-4 card-acento-teal">
+              <div class="card-body text-center text-muted py-4">
+                <i class="bi bi-check-circle fs-2 text-success opacity-50 d-block mb-2"></i>
+                ¡Sin requisitos pendientes!
+              </div>
+            </div>
+          <?php else: ?>
+            <div class="row g-3 mb-4">
+              <?php foreach ($requisitos_pendientes as $req): ?>
+              <div class="col-sm-6 col-xl-4">
+                <div class="card shadow-sm h-100 card-acento-teal">
+                  <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                      <span class="small fw-semibold"><?= htmlspecialchars($req['nombre']) ?></span>
+                      <?php if ($req['obligatorio']): ?>
+                        <span class="badge text-bg-danger flex-shrink-0" style="font-size:.6rem;">Obligatorio</span>
+                      <?php endif; ?>
                     </div>
-                  <?php else: ?>
-                    <ul class="list-group list-group-flush">
-                      <?php foreach ($requisitos_pendientes as $req): ?>
-                      <li class="list-group-item px-3 py-2">
-                        <div class="d-flex align-items-start justify-content-between gap-2">
-                          <div>
-                            <div class="small fw-semibold"><?= htmlspecialchars($req['nombre']) ?></div>
-                            <small class="text-muted">
-                              <?= htmlspecialchars($req['etapa_nombre']) ?>
-                              <?php if ($req['entidad_nombre']): ?>
-                                · <span class="text-primary"><?= htmlspecialchars($req['entidad_nombre']) ?></span>
-                              <?php endif; ?>
-                            </small>
-                          </div>
-                          <div class="d-flex flex-column align-items-end gap-1">
-                            <?php if ($req['obligatorio']): ?>
-                              <span class="badge text-bg-danger" style="font-size:.6rem;">Obligatorio</span>
-                            <?php endif; ?>
-                            <?php if ($req['fecha_vencimiento']): ?>
-                              <small class="text-danger"><i class="bi bi-calendar-x me-1"></i><?= date('d/m/Y', strtotime($req['fecha_vencimiento'])) ?></small>
-                            <?php endif; ?>
-                          </div>
-                        </div>
-                      </li>
-                      <?php endforeach; ?>
-                    </ul>
-                  <?php endif; ?>
+                    <div class="text-muted small mb-2">
+                      <?= htmlspecialchars($req['etapa_nombre']) ?>
+                      <?php if ($req['entidad_nombre']): ?>
+                        · <span class="text-zf-teal"><?= htmlspecialchars($req['entidad_nombre']) ?></span>
+                      <?php endif; ?>
+                    </div>
+                    <?php if ($req['fecha_vencimiento']): ?>
+                      <small class="text-danger"><i class="bi bi-calendar-x me-1"></i><?= date('d/m/Y', strtotime($req['fecha_vencimiento'])) ?></small>
+                    <?php endif; ?>
+                  </div>
                 </div>
               </div>
-
+              <?php endforeach; ?>
             </div>
-
-          </div>
+          <?php endif; ?>
 
         <?php endif; ?>
 

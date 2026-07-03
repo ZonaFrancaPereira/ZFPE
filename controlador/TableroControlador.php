@@ -132,15 +132,21 @@ class TableroControlador extends ControladorBase {
                 $stmtPend->execute([$empresa_id]);
                 $requisitos_pendientes = $stmtPend->fetchAll();
 
-                // Alertas sin resolver
-                $stmtAlertas = $this->db->prepare("
-                    SELECT * FROM empresa_alertas
-                    WHERE empresa_id = ? AND resuelta = 0
-                    ORDER BY prioridad ASC, creado_en DESC
-                    LIMIT 5
-                ");
-                $stmtAlertas->execute([$empresa_id]);
-                $alertas = $stmtAlertas->fetchAll();
+                // Alertas ejecutivas: solo las que me tocan (destinatario específico,
+                // o difusión general si soy gerente de la empresa).
+                require_once __DIR__ . '/../modelo/AlertasModelo.php';
+                $usuarioIdActual = $this->usuarioId();
+                $stmtGerente = $this->db->prepare("SELECT es_gerente FROM usuarios WHERE id = ?");
+                $stmtGerente->execute([$usuarioIdActual]);
+                $esGerenteActual = (bool) $stmtGerente->fetchColumn();
+
+                $alertas = array_values(array_filter(
+                    (new AlertasModelo($this->db))->listarPorEmpresa((int) $empresa_id),
+                    function (array $a) use ($usuarioIdActual, $esGerenteActual): bool {
+                        $destinatarios = AlertasModelo::idsDesdeConcat($a['destinatario_ids'] ?? null);
+                        return !empty($destinatarios) ? in_array($usuarioIdActual, $destinatarios, true) : $esGerenteActual;
+                    }
+                ));
             } else {
                 $empresa = null;
                 $requisitos_pendientes = [];

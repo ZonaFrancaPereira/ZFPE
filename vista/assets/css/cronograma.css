@@ -33,7 +33,7 @@
   box-shadow: 0 0 0 3px var(--bs-body-bg), 0 .2rem .4rem rgba(0,0,0,.12);
 }
 .timeline-active .timeline-marker {
-  box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), .25), 0 .3rem .6rem rgba(var(--bs-primary-rgb), .25);
+  box-shadow: 0 0 0 4px rgba(var(--zf-teal-rgb), .25), 0 .3rem .6rem rgba(var(--zf-teal-rgb), .25);
 }
 .timeline-content { padding-left: 24px; }
 
@@ -45,8 +45,8 @@
 }
 .fase-card:hover { box-shadow: 0 .35rem .9rem rgba(0,0,0,.1); }
 .fase-card .card-header {
-  background: linear-gradient(90deg, rgba(var(--bs-danger-rgb), .12), transparent);
-  border-bottom: 1px solid rgba(var(--bs-danger-rgb), .15);
+  background: linear-gradient(90deg, rgba(var(--zf-teal-rgb), .12), transparent);
+  border-bottom: 1px solid rgba(var(--zf-teal-rgb), .18);
 }
 
 /* Nodo del stepper: pequeño "lift" al pasar el mouse para invitar al clic */
@@ -66,7 +66,7 @@
   transform: translateY(-1px);
 }
 .etapa-card--pendiente   { border-left-color: var(--bs-secondary); }
-.etapa-card--en_progreso { border-left-color: var(--bs-primary); background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), .04), transparent 60%); }
+.etapa-card--en_progreso { border-left-color: var(--zf-teal); background: linear-gradient(135deg, rgba(var(--zf-teal-rgb), .06), transparent 60%); }
 .etapa-card--completa    { border-left-color: var(--bs-success); background: linear-gradient(135deg, rgba(var(--bs-success-rgb), .04), transparent 60%); }
 
 /* Botón que despliega/oculta los requisitos de una etapa */
@@ -89,6 +89,6 @@
   transform: translateY(-1px);
 }
 .requisito-mini-card--pendiente   { border-left-color: var(--bs-secondary); }
-.requisito-mini-card--en_progreso { border-left-color: var(--bs-primary); }
+.requisito-mini-card--en_progreso { border-left-color: var(--zf-teal); }
 .requisito-mini-card--cumplido    { border-left-color: var(--bs-success); }
 .requisito-mini-card--no_aplica   { border-left-color: var(--bs-border-color); opacity: .75; }
